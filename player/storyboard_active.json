@@ -1,0 +1,104 @@
+{
+    "media": {
+        "position_0": {
+            "aka_name": "Birds",
+            "file_name": "bird.jpg",
+            "file_type": "JPEG",
+            "audio": false,
+            "cycle_duration": 7.00,
+            "datetime_start": 1666482750,
+            "datetime_end": 1666482920,
+            "queued": true
+        },
+        "position_1": {
+            "aka_name": "Big Tree",
+            "file_name": "big_tree.jfif",
+            "file_type": "JPEG",
+            "audio": false,
+            "cycle_duration": 3.30,
+            "datetime_start": 1666482700,
+            "datetime_end": 1666483250,
+            "queued": false
+        },
+        "position_2": {
+            "aka_name": "WW2 Clip",
+            "file_name": "ww2.mp4",
+            "file_type": "MP4",
+            "audio": false,
+            "cycle_duration": 8.4,
+            "datetime_start": 1666488750,
+            "datetime_end": 1666489950,
+            "queued": true
+        },
+        "position_3": {
+            "aka_name": "Droplet",
+            "file_name": "drop.avi",
+            "file_type": "AVI",
+            "audio": false,
+            "cycle_duration": 3.32,
+            "datetime_start": 1666488750,
+            "datetime_end": 1666488790,
+            "queued": true
+        },
+        "position_4": {
+            "aka_name": "Rotating Earth",
+            "file_name": "earth.avi",
+            "file_type": "AVI",
+            "audio": false,
+            "cycle_duration": 2.44,
+            "datetime_start": 1666486750,
+            "datetime_end": 1666489750,
+            "queued": true
+        },
+        "position_5": {
+            "aka_name": "Linux in Hawaii",
+            "file_name": "hawaii_linux.png",
+            "file_type": "PNG",
+            "audio": false,
+            "cycle_duration": 6.55,
+            "datetime_start": 1666482700,
+            "datetime_end": 1666489950,
+            "queued": true
+        },
+        "position_6": {
+            "aka_name": null,
+            "file_name": null,
+            "file_type": null,
+            "audio": null,
+            "cycle_duration": null,
+            "datetime_start": null,
+            "datetime_end": null,
+            "queued": false
+        },
+        "position_7": {
+            "aka_name": null,
+            "file_name": null,
+            "file_type": null,
+            "audio": null,
+            "cycle_duration": null,
+            "datetime_start": null,
+            "datetime_end": null,
+            "queued": false
+        },
+        "position_8": {
+            "aka_name": null,
+            "file_name": null,
+            "file_type": null,
+            "audio": null,
+            "cycle_duration": null,
+            "datetime_start": null,
+            "datetime_end": null,
+            "queued": false
+        },
+        "position_9": {
+            "aka_name": null,
+            "file_name": null,
+            "file_type": null,
+            "audio": null,
+            "cycle_duration": null,
+            "datetime_start": null,
+            "datetime_end": null,
+            "queued": false
+        }
+    }
+}
