@@ -14,7 +14,7 @@ class Startup:
         self.player.set_fullscreen(True)
         directories = {
             "Windows": r"C:\pythonCode\rollerAds\player\media",
-            "Linux": r"\home/pi/pythonCode/rollerAds/player/media",
+            "Linux": r"/home/pi/pythonCode/rollerAds/player/media",
         }
         self.media_directory = directories[platform.system()]
 
@@ -47,6 +47,7 @@ def media_loop():
             )
             PLAYER.player.set_media(media)
             PLAYER.player.play()
+
             time.sleep(to_be_played["cycle_duration"])
         # max time control (debuggin only)
         if time.perf_counter() - t > 20:
