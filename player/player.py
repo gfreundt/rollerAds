@@ -49,7 +49,7 @@ def media_loop():
             PLAYER.player.play()
             time.sleep(to_be_played["cycle_duration"])
         # max time control (debuggin only)
-        if time.perf_counter() - t > 100:
+        if time.perf_counter() - t > 20:
             return
 
 
