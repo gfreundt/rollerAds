@@ -14,7 +14,7 @@ class Startup:
         self.player.set_fullscreen(True)
         directories = {
             "Windows": r"C:\pythonCode\rollerAds\player\media",
-            "Linux": r"\home\pi\pythonCode\rollerAds\player\media",
+            "Linux": r"\home/pi/pythonCode/rollerAds/player/media",
         }
         self.media_directory = directories[platform.system()]
 
