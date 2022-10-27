@@ -6,6 +6,7 @@ import vlc
 import time
 import os
 import platform
+from flask import Flask, render_template
 
 
 class Startup:
@@ -17,6 +18,7 @@ class Startup:
             "Linux": r"/home/pi/pythonCode/rollerAds/player/media",
         }
         self.media_directory = directories[platform.system()]
+        self.app = Flask(__name__)
 
     def load_storyboard(self):
         """Load JSON file that gives player the media information to play on a loop"""
@@ -31,6 +33,11 @@ class Startup:
 
 
 def updater():
+    @PLAYER.app.route("/")
+    def homepage():
+        return render_template("dashboard.html")
+
+    PLAYER.app.run(host="0.0.0.0", debug=False)
     print("Updater Running")
 
 
@@ -59,7 +66,7 @@ def main():
     global PLAYER
     PLAYER = Startup()
 
-    updater_thread = threading.Thread(target=updater)
+    updater_thread = threading.Thread(target=updater, daemon=True)
     media_loop_thread = threading.Thread(target=media_loop)
 
     updater_thread.start()
