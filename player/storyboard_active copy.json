@@ -1,22 +1,10 @@
 {
-    "supported_formats": [
-        "jpg",
-        "jfif",
-        "png",
-        "bmp",
-        "aiff",
-        "asf",
-        "avi",
-        "flv",
-        "mov",
-        "mp4",
-        "ogg",
-        "mkv",
-        "mpg",
-        "mpeg",
-        "raw",
-        "wav"
-    ],
+    "header": {
+        "table_titles": [
+            "Active",
+            "Inactive"
+        ]
+    },
     "media": {
         "position_0": {
             "aka_name": "Birds",
@@ -88,7 +76,7 @@
             "datetime_end_num": 1666489950,
             "datetime_start_str": "03:45:12 12/09/2021",
             "datetime_end_str": "09:55:18 14/09/2021",
-            "active": false
+            "active": true
         },
         "position_6": {
             "aka_name": null,
