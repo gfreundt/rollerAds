@@ -2,7 +2,8 @@
 
 import threading
 import json
-import vlc
+
+# import vlc
 import time
 import os
 import platform
@@ -15,11 +16,11 @@ from flask import Flask, render_template, redirect, request, url_for
 
 class Startup:
     def __init__(self):
-        self.player = vlc.MediaPlayer()
-        self.player.set_fullscreen(True)
+        # self.player = vlc.MediaPlayer()
+        # self.player.set_fullscreen(True)
         directories = {
-            "Windows": r"C:\pythonCode\rollerAds\player\media",
-            "Linux": r"/home/pi/pythonCode/rollerAds/player/media",
+            "Windows": r"C:\pythonCode\rollerAds\player\static\media",
+            "Linux": r"/home/pi/pythonCode/rollerAds/player/static/media",
         }
         self.media_directory = directories[platform.system()]
         self.form_defaults = {
@@ -35,16 +36,18 @@ class Startup:
     def load_storyboard(self):
         """Load JSON file that gives player the media information to play on a loop"""
 
-        with open("storyboard_active.json", mode="r") as json_file:
+        with open(".\static\json\storyboard_active.json", mode="r") as json_file:
             storyboard = json.load(json_file)
             media = storyboard["media"]
 
-        active = [i for i in media.values() if i["active"] and i["aka_name"]]
-        inactive = [i for i in media.values() if not i["active"] and i["aka_name"]]
-        loaded_media = [i["file_name"] for i in media.values()]
+        active = [i for i in media["active"].values() if i["aka_name"]]
+        inactive = [i for i in media["inactive"].values() if i["aka_name"]]
+        loaded_media = [
+            i["file_name"] for i in (media["active"] | media["inactive"]).values()
+        ]
         unloaded_media = [
             i
-            for i in os.listdir(os.path.join(os.getcwd(), "media"))
+            for i in os.listdir(os.path.join(os.getcwd(), "static", "media"))
             if i not in loaded_media
         ]
         return {"active": active, "inactive": inactive, "unloaded": unloaded_media}
@@ -87,6 +90,20 @@ def updater():
     @PLAYER.app.route("/loaded")
     def loaded():
         return render_template("loaded.html", data=PLAYER.load_storyboard())
+
+    # Landing page only receives data from JS
+    @PLAYER.app.route("/update", methods=["POST"])
+    def update():
+        result = json.loads(request.get_json())
+        print(result)
+        return result
+
+        # .split(" ")[-1]
+        table, action, row = result[0], result[1], result[2:]
+
+        print(table, action, row)
+
+        return result
 
     @PLAYER.app.route("/unloaded")
     def unloaded():
