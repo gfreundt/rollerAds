@@ -23,34 +23,27 @@ class Startup:
             "Linux": r"/home/pi/pythonCode/rollerAds/player/static/media",
         }
         self.media_directory = directories[platform.system()]
-        self.form_defaults = {
-            "name": "nametest",
-            "duration": 10,
-            "start_date": "2021-10-25",
-            "start_time": "18:04",
-            "end_date": "2022-10-26",
-            "end_time": "22:34",
-        }
+        self.media = self.load_storyboard()
         self.app = Flask(__name__)
 
     def load_storyboard(self):
-        """Load JSON file that gives player the media information to play on a loop"""
-
+        """Load JSON file that holds all media information"""
         with open(".\static\json\storyboard_active.json", mode="r") as json_file:
             storyboard = json.load(json_file)
-            media = storyboard["media"]
+            return sorted(storyboard["loaded_media"], key=lambda i: i["position"])
 
-        active = [i for i in media["active"].values() if i["aka_name"]]
-        inactive = [i for i in media["inactive"].values() if i["aka_name"]]
-        loaded_media = [
-            i["file_name"] for i in (media["active"] | media["inactive"]).values()
-        ]
-        unloaded_media = [
+    def update_html_data(self):
+        media = self.load_storyboard()
+        print(media)
+        active = [i["playback"] for i in media if i["active"]]
+        inactive = [i["playback"] for i in media if not i["active"]]
+        loaded_media_filenames = [i["playback"]["file_name"] for i in media]
+        unloaded = [
             i
             for i in os.listdir(os.path.join(os.getcwd(), "static", "media"))
-            if i not in loaded_media
+            if i not in loaded_media_filenames
         ]
-        return {"active": active, "inactive": inactive, "unloaded": unloaded_media}
+        return {"active": active, "inactive": inactive, "unloaded": unloaded}
 
 
 def form_defaults(filename):
@@ -89,25 +82,22 @@ def updater():
     @PLAYER.app.route("/")
     @PLAYER.app.route("/loaded")
     def loaded():
-        return render_template("loaded.html", data=PLAYER.load_storyboard())
+        return render_template("loaded.html", data=PLAYER.update_html_data())
 
     # Landing page only receives data from JS
     @PLAYER.app.route("/update", methods=["POST"])
     def update():
         result = json.loads(request.get_json())
         print(result)
-        return result
-
-        # .split(" ")[-1]
-        table, action, row = result[0], result[1], result[2:]
-
-        print(table, action, row)
-
+        if result[0] == "a" and result[1] == "d":
+            position = int(result[2:])
+            item = [i for i in PLAYER.media if i["position"] == position]
+            print(item)
         return result
 
     @PLAYER.app.route("/unloaded")
     def unloaded():
-        return render_template("unloaded.html", data=PLAYER.load_storyboard())
+        return render_template("unloaded.html", data=PLAYER.update_html_data())
 
     @PLAYER.app.route("/unsupported")
     def unsupported():
