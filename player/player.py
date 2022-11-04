@@ -3,7 +3,7 @@
 import threading
 import json
 
-# import vlc
+import vlc
 import time
 import os
 import platform
@@ -16,8 +16,8 @@ from flask import Flask, render_template, redirect, request, url_for
 
 class Startup:
     def __init__(self):
-        # self.player = vlc.MediaPlayer()
-        # self.player.set_fullscreen(True)
+        self.player = vlc.MediaPlayer()
+        self.player.set_fullscreen(True)
         directories = {
             "Windows": r"C:\pythonCode\rollerAds\player\static\media",
             "Linux": r"/home/pi/pythonCode/rollerAds/player/static/media",
@@ -34,7 +34,6 @@ class Startup:
 
     def update_html_data(self):
         media = self.load_storyboard()
-        print(media)
         active = [i["playback"] for i in media if i["active"]]
         inactive = [i["playback"] for i in media if not i["active"]]
         loaded_media_filenames = [i["playback"]["file_name"] for i in media]
@@ -85,14 +84,35 @@ def updater():
         return render_template("loaded.html", data=PLAYER.update_html_data())
 
     # Landing page only receives data from JS
-    @PLAYER.app.route("/update", methods=["POST"])
+    @PLAYER.app.route("/processAction", methods=["POST"])
     def update():
         result = json.loads(request.get_json())
-        print(result)
-        if result[0] == "a" and result[1] == "d":
-            position = int(result[2:])
-            item = [i for i in PLAYER.media if i["position"] == position]
-            print(item)
+        position = int(result[2:])
+        # Active --> Inactive
+        if result[1] == "d":
+            for i, item in enumerate(PLAYER.media):
+                if item["active"] and item["position"] == position:
+                    PLAYER.media[i]["active"] = False
+        # Inactive --> Active
+        elif result[1] == "a":
+            for i, item in enumerate(PLAYER.media):
+                if not item["active"] and item["position"] == position:
+                    PLAYER.media[i]["active"] = True
+        # Unload Media
+        elif result[1] == "u":
+            pass
+        # Complete action by recalculating positions for active and inactive
+        active = [i for i in PLAYER.media if i["active"]]
+        inactive = [i for i in PLAYER.media if not i["active"]]
+        for n, _ in enumerate(active):
+            active[n]["position"] = n
+        for n, _ in enumerate(inactive):
+            inactive[n]["position"] = n
+        test = active + inactive
+        # Save JSON file
+        with open(".\static\json\storyboard_active.json", mode="w") as json_file:
+            json.dump({"loaded_media": active + inactive}, json_file)
+
         return result
 
     @PLAYER.app.route("/unloaded")
@@ -127,7 +147,7 @@ def updater():
                 media=filename.split("\\")[-1],
             )
 
-    PLAYER.app.run(host="0.0.0.0", debug=True)
+    PLAYER.app.run(host="0.0.0.0", debug=False)
     print("Updater Running")
 
 
@@ -135,19 +155,20 @@ def media_loop():
     """Thread that loops through all active media items and resets storyboard with each cycle"""
     t = time.perf_counter()
     while True:
-        # reload storyboard with every cycle in case it has been changed by updater
-        PLAYER.storyboard_active, _ = PLAYER.load_storyboard()
-        # loop through all active media
-        for to_be_played in PLAYER.storyboard_active:
-            media = vlc.Media(
-                os.path.join(PLAYER.media_directory, to_be_played["file_name"])
-            )
-            PLAYER.player.set_media(media)
-            PLAYER.player.play()
+        # load active storyboard and loop through all active media
+        for play_this_file in PLAYER.load_storyboard():
+            if play_this_file["active"]:
+                media = vlc.Media(
+                    os.path.join(
+                        PLAYER.media_directory, play_this_file["playback"]["file_name"]
+                    )
+                )
+                PLAYER.player.set_media(media)
+                PLAYER.player.play()
+            time.sleep(play_this_file["playback"]["cycle_duration"])
 
-            time.sleep(to_be_played["cycle_duration"])
         # max time control (debuggin only)
-        if time.perf_counter() - t > 20:
+        if time.perf_counter() - t > 60:
             return
 
 
@@ -156,15 +177,11 @@ def main():
     global PLAYER
     PLAYER = Startup()
 
-    """
-    updater_thread = threading.Thread(target=updater)
     media_loop_thread = threading.Thread(target=media_loop)
+    updater_thread = threading.Thread(target=updater)
 
-    updater_thread.start()
     media_loop_thread.start()
-    """
-
-    updater()
+    updater_thread.start()
 
 
 main()

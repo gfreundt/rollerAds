@@ -28,11 +28,13 @@ function tableClick(event) {
     console.log(send)
 
     $.ajax({
-        url: "/update",
+        url: "/processAction",
         type: "POST",
         contentType: "application/json",
         data: JSON.stringify(send)
     });
+
+    location.reload()
 
 
 
