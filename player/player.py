@@ -7,8 +7,9 @@ import vlc
 import time
 import os
 import platform
-import filetype
-import cv2
+
+# import filetype
+# import cv2
 from datetime import datetime as dt
 from datetime import timedelta as td
 from flask import Flask, render_template, redirect, request, url_for
