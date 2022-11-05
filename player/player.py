@@ -19,8 +19,8 @@ class Startup:
         self.player = vlc.MediaPlayer()
         self.player.set_fullscreen(True)
         directories = {
-            "Windows": r"C:\pythonCode\rollerAds\player\static\media",
-            "Linux": r"/home/pi/pythonCode/rollerAds/player/static/media",
+            "Windows": r"C:\pythonCode\rollerAds\player\static",
+            "Linux": r"/home/pi/pythonCode/rollerAds/player/static",
         }
         self.media_directory = directories[platform.system()]
         self.media = self.load_storyboard()
@@ -28,7 +28,10 @@ class Startup:
 
     def load_storyboard(self):
         """Load JSON file that holds all media information"""
-        with open(".\static\json\storyboard_active.json", mode="r") as json_file:
+        with open(
+            os.path.join(self.media_directory, "json", "storyboard_active.json"),
+            mode="r",
+        ) as json_file:
             storyboard = json.load(json_file)
             return sorted(storyboard["loaded_media"], key=lambda i: i["position"])
 
@@ -160,7 +163,9 @@ def media_loop():
             if play_this_file["active"]:
                 media = vlc.Media(
                     os.path.join(
-                        PLAYER.media_directory, play_this_file["playback"]["file_name"]
+                        PLAYER.media_directory,
+                        "media",
+                        play_this_file["playback"]["file_name"],
                     )
                 )
                 PLAYER.player.set_media(media)
