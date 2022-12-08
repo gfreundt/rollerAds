@@ -40,32 +40,34 @@ def load_storyboard(flat):
     inactive = [i for i in storyboard if not i["active"]]
 
     # flatten information into plain list
+    # ("alert", color1, r["playback"]["file_name"]),
     if flat:
+        size = "[size=14]"
         active = [
             (
-                f'[anchor=center]{str(r["position"])}',
-                f'[color=#65275d]{r["playback"]["aka"]}[/color]',
-                ("alert", color1, r["playback"]["file_name"]),
-                r["playback"]["type"],
-                r["playback"]["format"],
-                f"[anchor=center]{str(r['playback']['audio'])}",
-                str(r["playback"]["duration"]),
-                r["playback"]["datetime_start_str"],
-                r["playback"]["datetime_end_str"],
+                f'{size}{str(r["position"])}',
+                f'{size}{r["playback"]["aka"]}',
+                f'{size}{r["playback"]["file_name"]}',
+                f'{size}{r["playback"]["type"]}',
+                f'{size}{r["playback"]["format"]}',
+                f'{size}{str(r["playback"]["audio"])}',
+                f'{size}{str(r["playback"]["duration"])} s',
+                f'{size}{r["playback"]["datetime_start_str"]}',
+                f'{size}{r["playback"]["datetime_end_str"]}',
             )
             for r in active
         ]
         inactive = [
             (
-                str(r["position"]),
-                r["playback"]["aka"],
-                r["playback"]["file_name"],
-                r["playback"]["type"],
-                r["playback"]["format"],
-                str(r["playback"]["audio"]),
-                str(r["playback"]["duration"]),
-                r["playback"]["datetime_start_str"],
-                r["playback"]["datetime_end_str"],
+                f'{size}{str(r["position"])}',
+                f'{size}{r["playback"]["aka"]}',
+                f'{size}{r["playback"]["file_name"]}',
+                f'{size}{r["playback"]["type"]}',
+                f'{size}{r["playback"]["format"]}',
+                f'{size}{str(r["playback"]["audio"])}',
+                f'{size}{str(r["playback"]["duration"])} s',
+                f'{size}{r["playback"]["datetime_start_str"]}',
+                f'{size}{r["playback"]["datetime_end_str"]}',
             )
             for r in inactive
         ]
@@ -80,16 +82,24 @@ class Table(BoxLayout):
         # set orientation of main boxlayout
         self.orientation = "vertical"
 
-        # split main box layout into two parts
-        top_block = BoxLayout(
-            orientation="vertical", spacing=15, padding=(10, 0, 10, 10)
-        )
-        bottom_block = BoxLayout(
-            orientation="vertical", spacing=15, padding=(10, 20, 10, 10)
-        )
-
         # load active and inactive data into flat table format
         active, inactive = load_storyboard(flat=True)
+        sh_top = len(active) / (len(active) + len(inactive))
+        sh_bottom = 1 - sh_top
+
+        # split main box layout into two parts
+        top_block = BoxLayout(
+            orientation="vertical",
+            spacing=15,
+            padding=(10, 0, 10, 10),
+            size_hint=(1, sh_top),
+        )
+        bottom_block = BoxLayout(
+            orientation="vertical",
+            spacing=15,
+            padding=(10, 20, 10, 10),
+            size_hint=(1, sh_bottom),
+        )
 
         # populate upper box with title and table
         new_widget = MDLabel(
@@ -98,7 +108,7 @@ class Table(BoxLayout):
             size_hint=(1, 0.1),
             halign="center",
         )
-        new_widget.font_size = 35
+        new_widget.font_size = 30
         top_block.add_widget(new_widget)
         top_block.add_widget(self.generate_table(active))
 
@@ -109,7 +119,7 @@ class Table(BoxLayout):
             size_hint=(1, 0.1),
             halign="center",
         )
-        new_widget.font_size = 35
+        new_widget.font_size = 30
         bottom_block.add_widget(new_widget)
         bottom_block.add_widget(self.generate_table(inactive))
 
@@ -120,18 +130,19 @@ class Table(BoxLayout):
     def generate_table(self, table_data):
         new_table = MDDataTable(
             column_data=[
-                ("Position", dp(20)),
+                ("#", dp(15)),
                 ("Name", dp(30)),
-                ("Filename", dp(30)),
-                ("Type", dp(20)),
-                ("Format", dp(30)),
-                ("Audio", dp(20)),
-                ("Duration", dp(30)),
+                ("Filename", dp(35)),
+                ("Type", dp(10)),
+                ("Format", dp(15)),
+                ("Audio", dp(10)),
+                ("Duration", dp(20)),
                 ("Start Date", dp(30)),
                 ("End Date", dp(30)),
             ],
             background_color_header="#FF00FF",
             background_color_selected_cell="e4514f",
+            check=True,
         )
         new_table.row_data = table_data
         new_table.size_hint = (1, 0.9)
@@ -147,7 +158,9 @@ class KivyApp(MDApp):
 
 def main():
     kivy.require("2.1.0")
-    Window.size = (1200, 600)
+    Window.size = (1500, 900)
+    Window.top = 50
+    Window.left = 50
     KivyApp().run()
 
 
