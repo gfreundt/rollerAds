@@ -1,13 +1,22 @@
-import filetype
-import os
+# importing vlc module
+import vlc, os
 
-p = r"C:\pythonCode\rollerAds\player\media"
+# importing time module
+import time
 
-x = os.listdir(p)
+pathx = os.path.join(r"\pythonCode", "rollerAds", "player", "static", "media")
 
-print(x)
+# creating a media player object
+media_player = vlc.MediaPlayer()
+media_player.toggle_fullscreen()
 
-for n in x:
-    if os.path.isfile(os.path.join(p, n)):
-        q, r = filetype.guess(os.path.join(p, n)).mime.split("/")
-        print(f"file={n}  family={q} type={r}")
+# creating Instance class object
+# player = vlc.Instance()
+
+t = time.perf_counter()
+for s in os.listdir(pathx):
+    print(s)
+    media_player.set_media(vlc.Media(os.path.join("static", "media", s)))
+    media_player.play()
+    time.sleep(10)
+print(time.perf_counter() - t)

@@ -1,6 +1,3 @@
-var g = "campeonato123"
-console.log(g.slice(-2))
-
 
 var activeTableBtn = document.getElementById('tables');
 // var inactiveTableBtn = document.getElementById('inactive-table')
@@ -25,16 +22,23 @@ function tableClick(event) {
 
     var action = event.target.className
     var send = JSON.stringify(action.slice(action.lastIndexOf(" ") + 1));
-    console.log(send)
+    var action = send.slice(2, 3);
+    var row = send.slice(3, -1);
+    console.log(send);
+    console.log(action);
+    console.log(row);
 
-    $.ajax({
-        url: "/processAction",
-        type: "POST",
-        contentType: "application/json",
-        data: JSON.stringify(send)
-    });
+    if (action == "e") {
 
-    location.reload()
+        $.ajax({
+            url: "/processAction",
+            type: "POST",
+            contentType: "application/json",
+            data: JSON.stringify(send)
+        });
+
+    }
+
 
 
 

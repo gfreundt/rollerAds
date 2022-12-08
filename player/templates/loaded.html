@@ -2,7 +2,7 @@
 
 {% block content %}
 <div id="tables">
-    <table class="content-table">
+    <table class="content-table" >
         <thead>
             <tr>
                 <th colspan="9" class="content-table-title">Active</th>
@@ -21,7 +21,7 @@
         </thead>
         <tbody>
             {% for item in data.active %}
-            <tr>
+            <tr draggable="true">
                 <th scope="row">{{loop.index0}}</th>
                 <td>{{item["aka"]}}</td>
                 <td>{{item["file_name"]}}</td>
@@ -29,8 +29,8 @@
                 <td style="text-align: center;">{{item["cycle_duration"]}} s</td>
                 <td style="text-align: center;">{{item["datetime_start_str"]}}</td>
                 <td style="text-align: center;">{{item["datetime_end_str"]}}</td>
-                <td><img class="content-table-icon deactivate-btn ad{{loop.index0}}"
-                        src="static/images/deactivate_icon.png" title="Change to Inactive"></td>
+                <td><img class="content-table-icon deactivate-btn ae{{loop.index0}}"
+                        src="static/images/edit_icon.png" title="Change to Inactive"></td>
                 <td><img class="content-table-icon unload-btn au{{loop.index0}}" src="static/images/unload_icon.png"
                         title="Unload"></td>
             </tr>
@@ -58,7 +58,7 @@
         </thead>
         <tbody>
             {% for item in data.inactive %}
-            <tr>
+            <tr draggable="true">
                 <th scope="row">{{loop.index0}}</th>
                 <td>{{item["aka"]}}</td>
                 <td>{{item["file_name"]}}</td>
@@ -66,7 +66,7 @@
                 <td style="text-align: center;">{{item["cycle_duration"]}} s</td>
                 <td style="text-align: center;">{{item["datetime_start_str"]}}</td>
                 <td style="text-align: center;">{{item["datetime_end_str"]}}</td>
-                <td><img class="content-table-icon activate-btn ia{{loop.index0}}" src="static/images/activate_icon.png"
+                <td><img class="content-table-icon activate-btn ie{{loop.index0}}" src="static/images/edit_icon.png"
                         title="Change to Active"></td>
                 <td><img class="content-table-icon unload-btn iu{{loop.index0}}" src="static/images/unload_icon.png"
                         title="Unload"></td>

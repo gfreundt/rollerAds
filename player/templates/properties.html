@@ -2,9 +2,7 @@
 
 {% block content %}
 
-{{media}}
-
-<img src="/static/test/{{media}}" />
+<img src="/static/test/{{media}}" style: width="200" />
 
 
 <form action="#" method="post">
@@ -29,7 +27,7 @@
         <input type="time" name="end_time" value={{defaults["end_time"]}}>
     </div>
     <div class="submit-button">
-        <input type="submit" value="Save">
+        <input type="submit" value="LOAD">
         <input type="reset" value="Clear">
     </div>
 </form>
