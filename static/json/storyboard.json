@@ -20,7 +20,7 @@
         {
             "active": false,
             "position": 1,
-            "thumbnail": "d34f.png",
+            "thumbnail": "d14f.png",
             "playback": {
                 "aka": "Birds",
                 "file_name": "bird.jpg",
@@ -37,7 +37,7 @@
         {
             "active": true,
             "position": 2,
-            "thumbnail": "d34f.png",
+            "thumbnail": "d24f.png",
             "playback": {
                 "aka": "Big Tree",
                 "file_name": "big_tree.jfif",
@@ -54,7 +54,7 @@
         {
             "active": true,
             "position": 3,
-            "thumbnail": "d34f.png",
+            "thumbnail": "d44f.png",
             "playback": {
                 "aka": "Rotating Earth",
                 "file_name": "earth.avi",
@@ -71,7 +71,7 @@
         {
             "active": false,
             "position": 0,
-            "thumbnail": "d34f.png",
+            "thumbnail": "d54f.png",
             "playback": {
                 "aka": "WW2 clip",
                 "file_name": "ww2.mp4",
@@ -88,7 +88,7 @@
         {
             "active": false,
             "position": 1,
-            "thumbnail": "d34f.png",
+            "thumbnail": "d64f.png",
             "playback": {
                 "aka": "Linues in Hawaii",
                 "file_name": "hawaii_linux.png",

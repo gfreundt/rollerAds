@@ -10,6 +10,7 @@ from kivymd.app import MDApp
 from kivymd.uix.screen import Screen
 from kivymd.uix.datatables import MDDataTable
 from kivymd.uix.label import MDLabel
+from kivymd.uix.button import MDRoundFlatButton
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
 from kivy.core.window import Window
@@ -40,12 +41,13 @@ def load_storyboard(flat):
 
     # create list of images for use with thumbnails
     active_thumbnails = [i["thumbnail"] for i in active]
+    inactive_thumbnails = [i["thumbnail"] for i in inactive]
 
     # flatten information into plain list
     active = flatten(active, 14)
     inactive = flatten(inactive, 14)
 
-    return active, inactive, active_thumbnails
+    return active, inactive, active_thumbnails, inactive_thumbnails
 
 
 def flatten(data, size):
@@ -75,7 +77,12 @@ class Table(BoxLayout):
         self.orientation = "vertical"
 
         # load active and inactive data into flat table format
-        active, inactive, active_thumbnails = load_storyboard(flat=True)
+        (
+            active,
+            inactive,
+            self.active_thumbnails,
+            self.inactive_thumbnails,
+        ) = load_storyboard(flat=True)
         sh_top = len(active) / (len(active) + len(inactive))
         sh_bottom = 1 - sh_top
 
@@ -94,13 +101,13 @@ class Table(BoxLayout):
         )
 
         # populate upper box with title, table and button section
-        new_table = MDLabel(
+        new_title = MDLabel(
             markup=True,
             text="[b]Loaded[/b]",
             size_hint=(1, 0.1),
             halign="center",
         )
-        new_table.font_size = 30
+        new_title.font_size = 30
         new_midsection = BoxLayout(
             orientation="horizontal",
             spacing=5,
@@ -115,21 +122,23 @@ class Table(BoxLayout):
         )
 
         # insert table and preview zone in midsection
-
-        image_preview = Image(
-            source=os.path.join(MEDIA_LOCATION, "thumbnails", active_thumbnails[0])
+        self.image_preview = Image(
+            source=os.path.join(
+                MEDIA_LOCATION, "thumbnails", self.active_thumbnails[0]
+            ),
         )
-        image_preview.size_hint = (0.25, 1)
+        self.image_preview.size_hint = (0.25, 1)
 
         new_midsection.add_widget(self.generate_table(active))
-        new_midsection.add_widget(image_preview)
+        new_midsection.add_widget(self.image_preview)
 
         # insert buttons into button section
-        new_widget.add_widget(Button(text="UnLoad"))
-        new_widget.add_widget(Button(text="ReOrder"))
+        new_widget.add_widget(MDRoundFlatButton(text="UnLoad"))
+        new_widget.add_widget(MDRoundFlatButton(text="Move Up"))
+        new_widget.add_widget(MDRoundFlatButton(text="Move Down"))
 
         # combine all three pieces of Widget A
-        top_block.add_widget(new_table)
+        top_block.add_widget(new_title)
         top_block.add_widget(new_midsection)
         top_block.add_widget(new_widget)
 
@@ -149,8 +158,8 @@ class Table(BoxLayout):
         )
 
         # insert buttons into button section
-        new_widget.add_widget(Button(text="Load"))
-        new_widget.add_widget(Button(text="Discard"))
+        new_widget.add_widget(MDRoundFlatButton(text="Load", on_press=self.click))
+        new_widget.add_widget(MDRoundFlatButton(text="Discard"))
 
         # combine all three pieces of Widget B
         bottom_block.add_widget(new_title)
@@ -179,9 +188,21 @@ class Table(BoxLayout):
             elevation=2,
         )
         new_table.row_data = table_data
-        # new_table.size_hint = (1, 0.8)
+        new_table.bind(on_row_press=self.row_selected)
         new_table.size_hint = (0.75, 1)
         return new_table
+
+    def click(self, k):
+        print("dfdfdf")
+        print(k)
+        self.image_preview.source = os.path.join(
+            MEDIA_LOCATION, "thumbnails", self.active_thumbnails[1]
+        )
+
+    def row_selected(self, table, row):
+        self.image_preview.source = os.path.join(
+            MEDIA_LOCATION, "thumbnails", self.active_thumbnails[row.index // 9]
+        )
 
 
 class KivyApp(MDApp):
