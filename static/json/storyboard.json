@@ -1,15 +1,15 @@
 {
     "loaded_media": [
         {
+            "id": "b8a05562acd54a9788d6982db502f995",
             "active": true,
-            "position": 0,
+            "position": 2,
             "thumbnail": "d34f.png",
             "playback": {
                 "aka": "Droplet",
                 "file_name": "drop.avi",
                 "type": "Video",
                 "format": "AVI",
-                "audio": true,
                 "duration": 1.0,
                 "datetime_start_num": 1666488750,
                 "datetime_end_num": 1666488790,
@@ -18,6 +18,7 @@
             }
         },
         {
+            "id": "165159677bb54f70a13ef1d79af4a8e9",
             "active": false,
             "position": 1,
             "thumbnail": "d14f.png",
@@ -26,7 +27,6 @@
                 "file_name": "bird.jpg",
                 "type": "Video",
                 "format": "JPEG",
-                "audio": false,
                 "duration": 7.0,
                 "datetime_start_num": 1666482750,
                 "datetime_end_num": 1666482920,
@@ -35,15 +35,15 @@
             }
         },
         {
+            "id": "4618e91a06624e12a4258d8486a889af",
             "active": true,
-            "position": 2,
+            "position": 1,
             "thumbnail": "d24f.png",
             "playback": {
                 "aka": "Big Tree",
                 "file_name": "big_tree.jfif",
                 "type": "Video",
                 "format": "JPEG",
-                "audio": false,
                 "duration": 3.3,
                 "datetime_start_num": 1666482700,
                 "datetime_end_num": 1666483250,
@@ -52,6 +52,7 @@
             }
         },
         {
+            "id": "2b691f3109e1438f80fde53df8e8c7c2",
             "active": true,
             "position": 3,
             "thumbnail": "d44f.png",
@@ -60,7 +61,6 @@
                 "file_name": "earth.avi",
                 "type": "Video",
                 "format": "AVI",
-                "audio": false,
                 "duration": 2.44,
                 "datetime_start_num": 1666486750,
                 "datetime_end_num": 1666489750,
@@ -69,15 +69,15 @@
             }
         },
         {
+            "id": "9e15ad007ebf4ebfbee8b65ec8dbd997",
             "active": false,
-            "position": 0,
+            "position": 2,
             "thumbnail": "d54f.png",
             "playback": {
                 "aka": "WW2 clip",
                 "file_name": "ww2.mp4",
                 "type": "Video",
                 "format": "MP4",
-                "audio": false,
                 "duration": 8.4,
                 "datetime_start_num": 1666488750,
                 "datetime_end_num": 1666489950,
@@ -86,15 +86,15 @@
             }
         },
         {
-            "active": false,
-            "position": 1,
+            "id": "5a76308e6fe54eccbacbae54e2732713",
+            "active": true,
+            "position": 4,
             "thumbnail": "d64f.png",
             "playback": {
                 "aka": "Linues in Hawaii",
                 "file_name": "hawaii_linux.png",
                 "type": "Video",
                 "format": "PNG",
-                "audio": false,
                 "duration": 6.55,
                 "datetime_start_num": 1666482700,
                 "datetime_end_num": 1666489950,

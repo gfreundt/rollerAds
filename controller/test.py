@@ -1,141 +1,20 @@
 import json
 import os
 import platform
-from datetime import datetime as dt
-from kivymd.app import MDApp
-from kivymd.uix.datatables import MDDataTable
-from kivymd.uix.list import OneLineListItem
 
-from kivy.uix.popup import Popup
-import kivy
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.button import Button
-from kivymd.uix.label import MDLabel
-from kivy.uix.scrollview import ScrollView
-from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.core.window import Window
-from kivy.metrics import dp
+from kivymd.app import MDApp
 from kivy.lang import Builder
-from kivy.clock import Clock
+from kivy.metrics import dp
+from kivy.uix.screenmanager import Screen, ScreenManager
+from kivy.properties import ListProperty, StringProperty, ObjectProperty
+from kivy.clock import mainthread
 
 
-class EditProperties(Screen):
-    pass
-    """
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        # self.record = {"playback": "test"}
-        # data = self.record
-        # self.full_record = data
-        # self.record = data["playback"]
-        # self.ids.aka.text = self.record["aka"]
-        # self.ids.file_name.text = self.record["file_name"]
-        # self.ids.type.text = self.record["type"]
-        # self.ids.format.text = self.record["format"]
-        # self.ids.duration.text = str(self.record["duration"])
-        # self.ids.begin.text = self.record["datetime_start_str"]
-        # self.ids.end.text = self.record["datetime_end_str"]
-        # self.open()
-        self.response = None
-
-    def cancel(self):
-        pass
-        # self.dismiss()
-
-    def save(self):
-        # update "playback" key with new information from popup
-        self.response = self.full_record | (
-            {
-                "playback": {
-                    "aka": self.ids.aka.text,
-                    "file_name": self.ids.file_name.text,
-                    "type": self.ids.type.text,
-                    "format": self.ids.format.text,
-                    "duration": self.ids.duration.text,
-                    "datetime_start_num": dt.strptime(
-                        self.ids.begin.text, "%H:%M:%S %d/%m/%Y"
-                    ),
-                    "datetime_end_num": dt.strptime(
-                        self.ids.end.text, "%H:%M:%S %d/%m/%Y"
-                    ),
-                    "datetime_start_str": self.ids.begin.text,
-                    "datetime_end_str": self.ids.end.text,
-                }
-            }
-        )
-        # self.dismiss()
-        """
+from kivymd.uix.datatables import MDDataTable
 
 
-class AddNewFile(Screen):
-    pass
-    """
-    def __init__(self, files, **kwargs):
-        super().__init__(**kwargs)
-
-        for file in files:
-            self.ids.new_file_list.add_widget(
-                OneLineListItem(
-                    text=file,
-                    theme_text_color="Custom",
-                    text_color=(1, 1, 1, 1),
-                    divider="Full",
-                    divider_color=(0, 0, 1, 1),
-                    on_press=self.file_selected,
-                    radius=[15, 15, 15, 15],
-                    size_hint=(1, 0.5),
-                )
-            )
-        # self.open()
-
-    def add(self):
-        preloaded_data = {
-            "playback": {
-                "aka": "",
-                "file_name": self.active_file,
-                "type": "",
-                "format": "",
-                "duration": 0,
-                "datetime_start_num": 1666482750,
-                "datetime_end_num": 1666482920,
-                "datetime_start_str": "03:45:12 12/09/2021",
-                "datetime_end_str": "09:55:18 14/09/2021",
-            }
-        }
-        self.table_updater = Clock.schedule_interval(self.auto_updater_new, 0.5)
-        self.popup = EditPropertiesPopup(preloaded_data)
-
-    def cancel(self):
-        pass
-        # self.dismiss()
-
-    def file_selected(self, object):
-        # TODO: change path variable and make image variable
-        path = r"C:\pythonCode\rollerAds\media"
-        self.active_file = object.text
-        self.ids.selected_file_image.source = os.path.join(path, object.text)
-        self.ids.selected_file_name.text = f"[b]Selected File:[/b] {object.text}"
-        s = os.stat(os.path.join(path, object.text)).st_size // 1000
-        self.ids.selected_file_created.text = f"[b]File Size:[/b] {s:,} Kb"
-        d = dt.fromtimestamp(
-            os.stat(os.path.join(path, object.text)).st_ctime
-        ).strftime("%m/%d/%Y, %H:%M:%S")
-        self.ids.selected_file_size.text = f"[b]Created on:[/b] {d}"
-
-    def auto_updater_new(self, _):
-        if self.popup.response:
-            print(self.popup.response)
-            return
-
-            self.inactive.append(self.popup.response)
-            self.update_tables()
-            self.table_updater.cancel()
-        """
-
-
-class MainLayout(Screen):
-    pass
-
+class LoadedMedia(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -152,16 +31,23 @@ class MainLayout(Screen):
         self.split_active_and_inactive()
 
         # load generated data into table and replace layout placeholder
-        # self.table_active = self.generate_table(
-        #     SCREEN.get_screen("main_layout").ids.table_active, self.active_formatted
-        # )
-        # self.table_inactive = self.generate_table(
-        #     self.ids.table_inactive, self.inactive_formatted
-        # )
+        @mainthread
+        def delayed():
+            idx = MAIN.SCREEN.get_screen("loadedMedia").ids
+            self.table_active = self.generate_table(
+                idx.table_active,
+                self.active_formatted,
+            )
+            self.table_inactive = self.generate_table(
+                idx.table_inactive,
+                self.inactive_formatted,
+            )
+
+        delayed()
 
     def row_selected(self, _, cell):
         row = cell.index // 8
-        if cell.table.uid == 644:
+        if cell.table.height == 206:
             thumbnails = self.active_thumbnails
             self.selected_row_active = row
             self.selected_table = 0
@@ -169,6 +55,29 @@ class MainLayout(Screen):
             thumbnails = self.inactive_thumbnails
             self.selected_row_inactive = row
             self.selected_table = 1
+
+        idx = self.manager.get_screen("editProperties")
+        idx.aka.text = self.active[row]["playback"]["aka"]
+        idx.file_name.text = self.active[row]["playback"]["file_name"]
+        idx.type.text = self.active[row]["playback"]["type"]
+        idx.format.text = self.active[row]["playback"]["format"]
+        idx.duration.text = str(self.active[row]["playback"]["duration"])
+        idx.begin.text = self.active[row]["playback"]["datetime_start_str"]
+        idx.end.text = self.active[row]["playback"]["datetime_end_str"]
+
+        # copy complete information to reassemble record for json archive
+        # self.full_record = row_data
+        # extract playback information from full record
+        # self.row_record = row_data["playback"]
+        # define ids pointer
+
+        # idx.aka.text = self.row_record["aka"]
+        # idx.file_name.text = self.row_record["file_name"]
+        # idx.type.text = self.full_record["type"]
+        # idx.format.text = self.full_record["format"]
+        # idx.duration.text = str(self.full_record["duration"])
+        # idx.begin.text = self.full_record["datetime_start_str"]
+        # idx.end.text = self.full_record["datetime_end_str"]
 
         self.ids.image_preview.source = os.path.join(
             self.MEDIA_LOCATION,
@@ -212,25 +121,19 @@ class MainLayout(Screen):
         self.update_tables()
 
     def save(self):
-        print("||||||||||||", self.a.edit_response)
+        pass
 
     def load_new_file(self):
         efiles = [i["playback"]["file_name"] for i in self.active + self.inactive]
         files = [
             i for i in os.listdir(self.MEDIA_LOCATION) if i not in efiles and "." in i
         ]
-        self.table_updater = Clock.schedule_interval(self.auto_updater_new, 0.5)
-        self.add_file = AddNewFilePopup(files)
-        print("+++++++++++++", self.add_file)
 
     def edit_active(self):
-        # permanent loop that updates tables if editting generated changes
-        self.table_updater = Clock.schedule_interval(self.auto_updater, 0.5)
-        self.popup = EditPropertiesPopup(self.active[self.selected_row_active])
+        EditProperties()  # self.active[self.selected_row_active])
 
     def edit_inactive(self):
         # permanent loop that updates tables if editting generated changes
-        self.table_updater = Clock.schedule_interval(self.auto_updater, 0.5)
         self.popup = EditPropertiesPopup(self.inactive[self.selected_row_inactive])
 
     def update_tables(self):
@@ -328,17 +231,79 @@ class MainLayout(Screen):
         return new_table
 
 
+class EditProperties(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+        # copy complete information to reassemble record for json archive
+        # self.full_record = row_data
+        # extract playback information from full record
+        # self.row_record = row_data["playback"]
+        # define ids pointer
+
+        # idx.aka.text = self.row_record["aka"]
+        # idx.file_name.text = self.row_record["file_name"]
+        # idx.type.text = self.full_record["type"]
+        # idx.format.text = self.full_record["format"]
+        # idx.duration.text = str(self.full_record["duration"])
+        # idx.begin.text = self.full_record["datetime_start_str"]
+        # idx.end.text = self.full_record["datetime_end_str"]
+
+    def edit_save(self):
+        print(MAIN.GREAT)
+        idx = self.manager.get_screen("loadedMedia")
+        # update "playback" key with new information from popup
+        # print(help(idx.table_active.update_row))
+        # print(help(idx.table_active.update_row_data))
+        idx.table_active.update_row(
+            idx.table_active.row_data[1], ["1", "2", "3", "4", "1", "2", "3", "4"]
+        )
+        """
+        self.response = self.full_record | (
+            {
+                "playback": {
+                    "aka": self.ids.aka.text,
+                    "file_name": self.ids.file_name.text,
+                    "type": self.ids.type.text,
+                    "format": self.ids.format.text,
+                    "duration": self.ids.duration.text,
+                    "datetime_start_num": dt.strptime(
+                        self.ids.begin.text, "%H:%M:%S %d/%m/%Y"
+                    ),
+                    "datetime_end_num": dt.strptime(
+                        self.ids.end.text, "%H:%M:%S %d/%m/%Y"
+                    ),
+                    "datetime_start_str": self.ids.begin.text,
+                    "datetime_end_str": self.ids.end.text,
+                }
+            }
+        )
+
+        print("sdfsdfsdfsdf")
+        self.ids.mineid.text = "Quick"
+        """
+
+
+class AddNewFile(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def func(self):
+        print("sdfsdfsdfsdf")
+        self.ids.mineid.text = "Quick"
+
+
 class WindowManager(ScreenManager):
     pass
 
 
-class KivyCode(MDApp):
+class KivyApp(MDApp):
+
+    GREAT = "furniture"
+
     def build(self):
-        # self.theme_cls.theme_style = "Dark"
-        # self.theme_cls.primary_palette = "DeepPurple"
-        # self.theme_cls.accent_palette = "Red"
-        print("1", SC)
-        return SC
+        self.SCREEN = Builder.load_file("test.kv")
+        return self.SCREEN
 
 
 def flatten_and_format(data, size):
@@ -360,11 +325,8 @@ def flatten_and_format(data, size):
 
 
 # Basic Kivy parameters
-kivy.require("2.1.0")
 Window.size = (1500, 900)
 Window.top, Window.left = 50, 50
 Window.clearcolor = (0.5, 0.3, 0.2, 1)
-SC = Builder.load_file("controller.kv")
-
-# Run Kivy framework
-KivyCode().run()
+MAIN = KivyApp()
+MAIN.run()
