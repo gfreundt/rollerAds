@@ -3,14 +3,14 @@ import os
 import platform
 
 from kivy.core.window import Window
-from kivymd.app import MDApp
 from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.uix.screenmanager import Screen, ScreenManager
-from kivy.properties import ListProperty, StringProperty, ObjectProperty
+
+# from kivy.properties import ListProperty, StringProperty, ObjectProperty
 from kivy.clock import mainthread
 
-
+from kivymd.app import MDApp
 from kivymd.uix.datatables import MDDataTable
 
 
@@ -251,12 +251,19 @@ class EditProperties(Screen):
 
     def edit_save(self):
         print(MAIN.GREAT)
-        idx = self.manager.get_screen("loadedMedia")
-        # update "playback" key with new information from popup
-        # print(help(idx.table_active.update_row))
-        # print(help(idx.table_active.update_row_data))
-        idx.table_active.update_row(
-            idx.table_active.row_data[1], ["1", "2", "3", "4", "1", "2", "3", "4"]
+        idx0 = self.manager.get_screen("loadedMedia")
+        idx = self.manager.get_screen("editProperties")
+        idx0.table_active.update_row(
+            idx0.table_active.row_data[1],
+            [
+                idx.aka.text,
+                idx.file_name.text,
+                idx.type.text,
+                idx.format.text,
+                idx.duration.text,
+                idx.begin.text,
+                idx.end.text,
+            ],
         )
         """
         self.response = self.full_record | (
