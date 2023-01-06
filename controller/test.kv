@@ -29,7 +29,6 @@ WindowManager:
                     
             BoxLayout:
                 orientation:"horizontal"
-                spacing:5
                 padding:(5, 5, 5, 5)
                 size_hint:(1, 0.8)
 
@@ -43,31 +42,33 @@ WindowManager:
     
             BoxLayout:
                 orientation:"horizontal"
-                spacing:5
+                spacing:"15dp"
                 size_hint:(1, 0.1)
 
-                MDRoundFlatButton:
-                    text:"Edit"
+                MDRoundFlatIconButton:
+                    icon: "application-edit-outline"
+                    text: "Edit"
                     on_press: 
                         root.manager.transition = FallOutTransition()
-                        root.manager.current = "editProperties"
-                        root.edit_active()
+                        root.edit(0)
 
-                MDRoundFlatButton:
+                MDRoundFlatIconButton:
+                    icon: "arrow-up-thick"
                     text:"Move Up"
                     on_press: root.move_up()
 
-                MDRoundFlatButton:
+                MDRoundFlatIconButton:
+                    icon: "arrow-down-thick"
                     text:"Move Down"
                     on_press: root.move_down()
 
-                MDRoundFlatButton:
+                MDRoundFlatIconButton:
+                    icon: "clipboard-arrow-down-outline"
                     text:"DeActivate"
                     on_press: root.deactivate()
 
         BoxLayout:
             orientation: 'vertical'
-            spacing: 15
             padding: ('10dp', '0dp', '10dp', '10dp')
             size_hint:(1, 0.5)
 
@@ -80,7 +81,6 @@ WindowManager:
 
             BoxLayout:
                 orientation:"horizontal"
-                spacing:5
                 size_hint:(1, 0.8)
 
                 AnchorLayout:
@@ -89,15 +89,19 @@ WindowManager:
                 
                 BoxLayout:
                     orientation: 'vertical'
+                    spacing:"20dp"
                     size_hint: (0.25, 1)
 
-                    MDRoundFlatButton:
+                    MDRoundFlatIconButton:
+                        icon: "content-save-outline"
                         text: "Save"
                         on_press: root.save()
-                    MDRoundFlatButton:
+                    MDRoundFlatIconButton:
+                        icon: "reload"
                         text: "Reset"
                         on_press: root.reset()
-                    MDRoundFlatButton:
+                    MDRoundFlatIconButton:
+                        icon: "upload-outline"
                         text: "Load New File"
                         on_press: 
                             root.manager.transition = NoTransition()
@@ -107,19 +111,24 @@ WindowManager:
 
             BoxLayout:
                 orientation:"horizontal"
-                spacing:5
+                spacing: "20dp"
                 padding:(5, 5, 5, 5)
                 size_hint:(1, 0.1)
 
-                MDRoundFlatButton:
+                MDRoundFlatIconButton:
+                    icon: "application-edit-outline"
                     text:"Edit"
-                    on_press: root.edit_inactive()
+                    on_press: 
+                        root.manager.transition = FallOutTransition()
+                        root.edit(1)
 
-                MDRoundFlatButton:
+                MDRoundFlatIconButton:
                     text:"Activate"
+                    icon: "clipboard-arrow-up-outline"
                     on_press: root.activate()
 
-                MDRoundFlatButton:
+                MDRoundFlatIconButton:
+                    icon: "download-outline"
                     text:"UnLoad"
                     on_press: root.unload()
 
@@ -211,13 +220,15 @@ WindowManager:
         BoxLayout:
             orientation: 'horizontal'
             size_hint: (1,0.2)
-            MDRoundFlatButton:
+            MDRoundFlatIconButton:
+                icon: "content-save-outline"
                 text: "Save"
                 on_press:
                     root.manager.transition = FallOutTransition()
                     root.manager.current = "loadedMedia"
                     root.edit_save()
-            MDRoundFlatButton:
+            MDRoundFlatIconButton:
+                icon: "close-thick"
                 text: "Cancel"
                 on_press:
                     root.manager.transition = FallOutTransition()

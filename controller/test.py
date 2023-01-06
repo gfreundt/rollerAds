@@ -24,7 +24,6 @@ class LoadedMedia(Screen):
         # initial states of selected rows for both tables and selected table
         self.selected_row_active = 0
         self.selected_row_inactive = 0
-        self.selected_table = 0
 
         # load data from JSON file and create active and inactive lists
         self.load_storyboard()
@@ -45,25 +44,25 @@ class LoadedMedia(Screen):
 
         delayed()
 
-    def row_selected(self, _, cell):
+    def row_selected(self, table, cell):
         row = cell.index // 8
-        if cell.table.height == 206:
+        if table.parent.uid < 150:
             thumbnails = self.active_thumbnails
-            self.selected_row_active = row
-            self.selected_table = 0
+            MAIN.selected_rows[0] = row
+            MAIN.selected_table[0] = self.active
         else:
             thumbnails = self.inactive_thumbnails
-            self.selected_row_inactive = row
-            self.selected_table = 1
+            MAIN.selected_rows[1] = row
+            MAIN.selected_table[1] = self.inactive
 
-        idx = self.manager.get_screen("editProperties")
-        idx.aka.text = self.active[row]["playback"]["aka"]
-        idx.file_name.text = self.active[row]["playback"]["file_name"]
-        idx.type.text = self.active[row]["playback"]["type"]
-        idx.format.text = self.active[row]["playback"]["format"]
-        idx.duration.text = str(self.active[row]["playback"]["duration"])
-        idx.begin.text = self.active[row]["playback"]["datetime_start_str"]
-        idx.end.text = self.active[row]["playback"]["datetime_end_str"]
+        # idx = self.manager.get_screen("editProperties")
+        # idx.aka.text = selected_table[row]["playback"]["aka"]
+        # idx.file_name.text = selected_table[row]["playback"]["file_name"]
+        # idx.type.text = selected_table[row]["playback"]["type"]
+        # idx.format.text = selected_table[row]["playback"]["format"]
+        # idx.duration.text = str(selected_table[row]["playback"]["duration"])
+        # idx.begin.text = selected_table[row]["playback"]["datetime_start_str"]
+        # idx.end.text = selected_table[row]["playback"]["datetime_end_str"]
 
         # copy complete information to reassemble record for json archive
         # self.full_record = row_data
@@ -129,12 +128,23 @@ class LoadedMedia(Screen):
             i for i in os.listdir(self.MEDIA_LOCATION) if i not in efiles and "." in i
         ]
 
-    def edit_active(self):
-        EditProperties()  # self.active[self.selected_row_active])
+    def edit(self, table):
+        if MAIN.selected_rows[table] < -1 or not MAIN.selected_table[table]:
+            return
 
-    def edit_inactive(self):
-        # permanent loop that updates tables if editting generated changes
-        self.popup = EditPropertiesPopup(self.inactive[self.selected_row_inactive])
+        row = MAIN.selected_rows[table]
+        self.manager.current = "editProperties"
+        idx = self.manager.get_screen("editProperties")
+        idx.aka.text = MAIN.selected_table[table][row]["playback"]["aka"]
+        idx.file_name.text = MAIN.selected_table[table][row]["playback"]["file_name"]
+        idx.type.text = MAIN.selected_table[table][row]["playback"]["type"]
+        idx.format.text = MAIN.selected_table[table][row]["playback"]["format"]
+        idx.duration.text = str(MAIN.selected_table[table][row]["playback"]["duration"])
+        idx.begin.text = MAIN.selected_table[table][row]["playback"][
+            "datetime_start_str"
+        ]
+        idx.end.text = MAIN.selected_table[table][row]["playback"]["datetime_end_str"]
+        EditProperties()
 
     def update_tables(self):
         self.split_active_and_inactive(reload=True)
@@ -143,7 +153,7 @@ class LoadedMedia(Screen):
 
     def auto_updater(self, _):
         if self.popup.response:
-            if self.selected_table == 0:
+            if selected_table == 0:
                 for k, d in enumerate(self.active):
                     if d["id"] == self.popup.response["id"]:
                         self.active[k] = self.popup.response
@@ -218,11 +228,9 @@ class LoadedMedia(Screen):
                 ("Start Date", dp(30)),
                 ("End Date", dp(30)),
             ],
-            background_color="#FF0000",
             background_color_header="#b0bec5",
-            # background_color_cell="#ebf4f1",
-            background_color_selected_cell="#e6b400",
-            elevation=2,
+            background_color_selected_cell="#FFFFFF",
+            elevation=0,
             use_pagination=True,
         )
         new_table.row_data = table_data
@@ -250,7 +258,6 @@ class EditProperties(Screen):
         # idx.end.text = self.full_record["datetime_end_str"]
 
     def edit_save(self):
-        print(MAIN.GREAT)
         idx0 = self.manager.get_screen("loadedMedia")
         idx = self.manager.get_screen("editProperties")
         idx0.table_active.update_row(
@@ -306,7 +313,8 @@ class WindowManager(ScreenManager):
 
 class KivyApp(MDApp):
 
-    GREAT = "furniture"
+    selected_rows = [-1, -1]
+    selected_table = [None, None]
 
     def build(self):
         self.SCREEN = Builder.load_file("test.kv")
