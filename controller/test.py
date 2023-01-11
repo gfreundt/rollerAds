@@ -1,17 +1,20 @@
 import json
 import os
 import platform
+from datetime import datetime as dt
 
 from kivy.core.window import Window
 from kivy.lang import Builder
 from kivy.metrics import dp
 from kivy.uix.screenmanager import Screen, ScreenManager
-
-# from kivy.properties import ListProperty, StringProperty, ObjectProperty
+from kivy.uix.popup import Popup
 from kivy.clock import mainthread
 
 from kivymd.app import MDApp
+from kivymd.uix.label import MDLabel
 from kivymd.uix.datatables import MDDataTable
+from kivymd.uix.pickers import MDDatePicker
+from kivymd.uix.menu import MDDropdownMenu
 
 
 class LoadedMedia(Screen):
@@ -49,11 +52,11 @@ class LoadedMedia(Screen):
         if table.parent.uid < 150:
             thumbnails = self.active_thumbnails
             MAIN.selected_rows[0] = row
-            MAIN.selected_table[0] = self.active
+            MAIN.selected_tables[0] = self.active
         else:
             thumbnails = self.inactive_thumbnails
             MAIN.selected_rows[1] = row
-            MAIN.selected_table[1] = self.inactive
+            MAIN.selected_tables[1] = self.inactive
 
         # idx = self.manager.get_screen("editProperties")
         # idx.aka.text = selected_table[row]["playback"]["aka"]
@@ -85,7 +88,7 @@ class LoadedMedia(Screen):
         )
 
     def move_up(self):
-        row = self.selected_row_active
+        row = MAIN.selected_rows[0]
         if row > 0:
             self.active[row]["position"], self.active[row - 1]["position"] = (
                 self.active[row - 1]["position"],
@@ -94,7 +97,7 @@ class LoadedMedia(Screen):
             self.update_tables()
 
     def move_down(self):
-        row = self.selected_row_active
+        row = MAIN.selected_rows[0]
         if row < len(self.active_formatted):
             self.active[row]["position"], self.active[row + 1]["position"] = (
                 self.active[row + 1]["position"],
@@ -103,21 +106,27 @@ class LoadedMedia(Screen):
             self.update_tables()
 
     def deactivate(self):
-        row = self.selected_row_active
-        self.active[row]["active"] = False
-        self.active[row]["position"] = 999
-        self.update_tables()
+        if len(self.active) > 0:
+            row = MAIN.selected_rows[0]
+            self.active[row]["active"] = False
+            self.active[row]["position"] = 999
+            self.update_tables()
+            MAIN.selected_rows[0], MAIN.selected_tables[0] = -1, None
 
     def activate(self):
-        row = self.selected_row_inactive
-        self.inactive[row]["active"] = True
-        self.inactive[row]["position"] = 999
-        self.update_tables()
+        if len(self.inactive) > 0:
+            row = MAIN.selected_rows[1]
+            self.inactive[row]["active"] = True
+            self.inactive[row]["position"] = 999
+            self.update_tables()
+            MAIN.selected_rows[1], MAIN.selected_tables[1] = -1, None
 
     def unload(self):
-        row = self.selected_row_active
-        self.inactive.pop(row)
-        self.update_tables()
+        if len(self.inactive) > 0:
+            row = MAIN.selected_rows[1]
+            self.inactive.pop(row)
+            self.update_tables()
+            MAIN.selected_rows[1], MAIN.selected_tables[1] = -1, None
 
     def save(self):
         pass
@@ -129,47 +138,27 @@ class LoadedMedia(Screen):
         ]
 
     def edit(self, table):
-        if MAIN.selected_rows[table] < -1 or not MAIN.selected_table[table]:
+        if MAIN.selected_rows[table] < -1 or not MAIN.selected_tables[table]:
             return
 
         row = MAIN.selected_rows[table]
         self.manager.current = "editProperties"
         idx = self.manager.get_screen("editProperties")
-        idx.aka.text = MAIN.selected_table[table][row]["playback"]["aka"]
-        idx.file_name.text = MAIN.selected_table[table][row]["playback"]["file_name"]
-        idx.type.text = MAIN.selected_table[table][row]["playback"]["type"]
-        idx.format.text = MAIN.selected_table[table][row]["playback"]["format"]
-        idx.duration.text = str(MAIN.selected_table[table][row]["playback"]["duration"])
-        idx.begin.text = MAIN.selected_table[table][row]["playback"][
-            "datetime_start_str"
-        ]
-        idx.end.text = MAIN.selected_table[table][row]["playback"]["datetime_end_str"]
-        EditProperties()
+        idx.aka.text = MAIN.selected_tables[table][row]["playback"]["aka"]
+        idx.file_name.text = MAIN.selected_tables[table][row]["playback"]["file_name"]
+        idx.type.text = MAIN.selected_tables[table][row]["playback"]["type"]
+        idx.format.text = MAIN.selected_tables[table][row]["playback"]["format"]
+        idx.duration.text = str(
+            MAIN.selected_tables[table][row]["playback"]["duration"]
+        )
+        idx.begin.text = MAIN.selected_tables[table][row]["playback"]["date_start"]
+        idx.end.text = MAIN.selected_tables[table][row]["playback"]["date_end"]
+        MAIN.table = table
 
     def update_tables(self):
         self.split_active_and_inactive(reload=True)
         self.table_active.update_row_data(self, self.active_formatted)
         self.table_inactive.update_row_data(self, self.inactive_formatted)
-
-    def auto_updater(self, _):
-        if self.popup.response:
-            if selected_table == 0:
-                for k, d in enumerate(self.active):
-                    if d["id"] == self.popup.response["id"]:
-                        self.active[k] = self.popup.response
-            else:
-                for k, d in enumerate(self.inactive):
-                    if d["id"] == self.popup.response["id"]:
-                        self.inactive[k] = self.popup.response
-
-            self.table_updater.cancel()
-            self.update_tables()
-
-    def auto_updater_new(self, _):
-        if self.add_file.popup.response:
-            print("gotcha")
-            self.add_file.table_updater.cancel()
-            self.update_tables()
 
     def load_storyboard(self):
         """Load JSON file that holds all media information"""
@@ -243,6 +232,27 @@ class EditProperties(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
+        self.type_values = list(MAIN.format_options.keys())
+        self.format_values = ""  # MAIN.format_options[self.ids.type.text]
+
+        """
+        self.dropdown = MDDropdownMenu()
+        self.dropdown.items = [
+            {
+                "viewclass": "MDMenuItem",
+                "icon": "git",
+                "text": "Example",
+                "callback": self.test,
+            },
+            {
+                "viewclass": "MDMenuItem",
+                "icon": "git",
+                "text": "Test",
+                "callback": self.test,
+            },
+        ]
+        """
+
         # copy complete information to reassemble record for json archive
         # self.full_record = row_data
         # extract playback information from full record
@@ -258,20 +268,40 @@ class EditProperties(Screen):
         # idx.end.text = self.full_record["datetime_end_str"]
 
     def edit_save(self):
-        idx0 = self.manager.get_screen("loadedMedia")
-        idx = self.manager.get_screen("editProperties")
-        idx0.table_active.update_row(
-            idx0.table_active.row_data[1],
+        # validate data entered
+        error_message = ""
+        if len(self.ids.aka.text) < 1:
+            error_message += "- Name cannot be empty.\n"
+        if not self.ids.format.text:
+            error_message += "- Format not selected.\n"
+        if float(self.ids.duration.text) <= 0:
+            error_message += "- Duration must be greater than 0.\n"
+        if dt.strptime(self.ids.end.text, "%a, %d %b %Y") < dt.now():
+            error_message += "- End date must be in the future."
+        if error_message:
+            alert = AlertPopup()
+            alert.ids.error_message.text = error_message
+            alert.open()
+            return
+
+        sz = "[size=14]"
+        idx = self.manager.get_screen("loadedMedia")
+        t = idx.table_active if MAIN.table == 0 else idx.table_inactive
+        t.update_row(
+            t.row_data[MAIN.selected_rows[MAIN.table]],
             [
-                idx.aka.text,
-                idx.file_name.text,
-                idx.type.text,
-                idx.format.text,
-                idx.duration.text,
-                idx.begin.text,
-                idx.end.text,
+                f"{sz}{MAIN.selected_rows[MAIN.table] + 1}",
+                f"{sz}{self.ids.aka.text}",
+                f"{sz}{self.ids.file_name.text}",
+                f"{sz}{self.ids.type.text}",
+                f"{sz}{self.ids.format.text}",
+                f"{sz}{float(self.ids.duration.text):.1f}",
+                f"{sz}{self.ids.begin.text}",
+                f"{sz}{self.ids.end.text}",
             ],
         )
+        self.manager.current = "loadedMedia"
+
         """
         self.response = self.full_record | (
             {
@@ -293,18 +323,51 @@ class EditProperties(Screen):
             }
         )
 
-        print("sdfsdfsdfsdf")
-        self.ids.mineid.text = "Quick"
+        
         """
+
+    def date_picker(self):
+        today = dt.now()
+        dialog = MDDatePicker(
+            mode="range", year=today.year, month=today.month, day=today.day
+        )
+        dialog.bind(on_save=self.on_date_picker_ok)
+        dialog.open()
+
+    def on_date_picker_ok(self, _, value, date_range):
+        self.ids.begin.text = dt.strftime(date_range[0], "%a, %d %b %Y")
+        self.ids.end.text = dt.strftime(date_range[-1], "%a, %d %b %Y")
+
+    def on_selected_type(self):
+        self.ids.format.text = ""
+        self.ids.format.values = MAIN.format_options[self.ids.type.text]
 
 
 class AddNewFile(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.drives = [
+            i for i in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" if os.path.exists(f"{i}:")
+        ]
 
-    def func(self):
-        print("sdfsdfsdfsdf")
-        self.ids.mineid.text = "Quick"
+    def on_selection(self, _, filename):
+        if not filename:
+            return
+
+        bs = "\\"
+        path = bs.join(filename[0].split(bs)[:-1])
+        self.ids.selected_file_name.text = f"File Name: {filename[0].split(bs)[-1]}"
+        self.ids.selected_file_path.text = f"File Path: {path}"
+        self.ids.selected_file_size.text = (
+            f"File Size: {os.path.getsize(filename[0])//1024:,} Kb"
+        )
+        self.ids.selected_file_created.text = f"Created on: {dt.fromtimestamp(os.path.getctime(filename[0])).strftime('%a, %d %b %Y')}"
+        self.ids.selected_file_image.source = filename[0]
+
+
+class AlertPopup(Popup):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 
 class WindowManager(ScreenManager):
@@ -312,9 +375,13 @@ class WindowManager(ScreenManager):
 
 
 class KivyApp(MDApp):
-
     selected_rows = [-1, -1]
-    selected_table = [None, None]
+    selected_tables = [None, None]
+    format_options = {
+        "Video": ["MOV", "MKV", "MP4", "AVI", "GIF"],
+        "Image": ["JPG", "PNG", "BMP"],
+        "Document": ["PDF", "PPT"],
+    }
 
     def build(self):
         self.SCREEN = Builder.load_file("test.kv")
@@ -331,9 +398,9 @@ def flatten_and_format(data, size):
             f'{sz}{i["playback"]["file_name"]}',
             f'{sz}{i["playback"]["type"]}',
             f'{sz}{i["playback"]["format"]}',
-            f'{sz}{str(i["playback"]["duration"])} s',
-            f'{sz}{i["playback"]["datetime_start_str"]}',
-            f'{sz}{i["playback"]["datetime_end_str"]}',
+            f'{sz}{str(i["playback"]["duration"])}',
+            f'{sz}{i["playback"]["date_start"]}',
+            f'{sz}{i["playback"]["date_end"]}',
         )
         for i in data
     ]

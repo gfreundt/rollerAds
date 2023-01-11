@@ -1,6 +1,9 @@
 #:import FallOutTransition kivy.uix.screenmanager.FallOutTransition
 #:import FadeTransition kivy.uix.screenmanager.FadeTransition
 #:import NoTransition kivy.uix.screenmanager.NoTransition
+#:import Factory kivy.factory.Factory
+
+
 
 WindowManager:
     LoadedMedia:
@@ -154,6 +157,7 @@ WindowManager:
         BoxLayout:
             orientation: 'vertical'
             size_hint: (1,0.7)
+            background_normal: ""
             BoxLayout:
                 orientation: 'horizontal'
                 size_hint: 1, 0.2
@@ -169,7 +173,7 @@ WindowManager:
                 MDLabel:
                     text: "File Name"
                     size_hint: 0.2, 1
-                MDTextFieldRect:
+                MDLabel:
                     id: file_name
                     size_hint: 0.8, 1
             BoxLayout:
@@ -178,18 +182,31 @@ WindowManager:
                 MDLabel:
                     text: "Type"
                     size_hint: 0.2, 1
-                MDTextFieldRect:
+                Spinner:
                     id: type
+                    color: 0,0,0,1
+                    values: root.type_values
                     size_hint: 0.8, 1
+                    sync_height: True
+                    background_normal: ''
+                    background_color: (1, 1, 1, 1)
+                    option_cls: Factory.spinner
+                    on_text: root.on_selected_type()
             BoxLayout:
                 orientation: 'horizontal'
                 size_hint: 1, 0.2
                 MDLabel:
                     text: "Format"
                     size_hint: 0.2, 1
-                MDTextFieldRect:
+                Spinner:
                     id: format
+                    color: 0,0,0,1
+                    values: root.format_values
                     size_hint: 0.8, 1
+                    sync_height: True
+                    background_normal: ''
+                    background_color: (1, 1, 1, 1)
+                    option_cls: Factory.spinner
             BoxLayout:
                 orientation: 'horizontal'
                 size_hint: 1, 0.2
@@ -199,24 +216,30 @@ WindowManager:
                 MDTextFieldRect:
                     id: duration
                     size_hint: 0.8, 1
+                    input_filter: "float"
             BoxLayout:
                 orientation: 'horizontal'
-                size_hint: 1, 0.2
-                MDLabel:
-                    text: "Begin"
-                    size_hint: 0.2, 1
-                MDTextFieldRect:
-                    id: begin
-                    size_hint: 0.8, 1
-            BoxLayout:
-                orientation: 'horizontal'
-                size_hint: 1, 0.2
-                MDLabel:
-                    text: "End"
-                    size_hint: 0.2, 1
-                MDTextFieldRect:
-                    id: end
-                    size_hint: 0.8, 1
+                size_hint: 1, 0.4
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint: 0.22, 1
+                    MDLabel:
+                        text: "Begin"
+                    MDLabel:
+                        text: "End"
+                BoxLayout:
+                    orientation: 'vertical'
+                    size_hint: 0.7, 1
+                    MDLabel:
+                        id: begin
+                    MDLabel:
+                        id: end
+                MDRaisedButton:
+                    text: "select\ndates"
+                    id: begin_btn
+                    size_hint: 0.1, 1
+                    on_release: root.date_picker()
+                        
         BoxLayout:
             orientation: 'horizontal'
             size_hint: (1,0.2)
@@ -224,8 +247,8 @@ WindowManager:
                 icon: "content-save-outline"
                 text: "Save"
                 on_press:
-                    root.manager.transition = FallOutTransition()
-                    root.manager.current = "loadedMedia"
+                    # root.manager.transition = FallOutTransition()
+                    # root.manager.current = "loadedMedia"
                     root.edit_save()
             MDRoundFlatIconButton:
                 icon: "close-thick"
@@ -237,54 +260,66 @@ WindowManager:
 
 <AddNewFile>:
     name: "addNewFile"
+
     BoxLayout:
         orientation: "vertical"
-        # Try MDFileManager
         size_hint: (0.65,0.9)
         pos_hint: {'right': 0.95,'center_y': 0.5}
+
         MDLabel:
+            size_hint: 1, 0.2
             text: "Select File to Load"
             halign: "center"
+
+        FileChooserListView:
+            id: file_viewer
+            path: r"C:\pythonCode\rollerAds\media"
+            size_hint: 1, 0.8
+            canvas.before:
+                Color:
+                    rgb: .4, .5, .5
+                Rectangle:
+                    size: self.size
+            on_selection: root.on_selection(*args)
+
         BoxLayout:
-            id: box
-            orientation: 'vertical'
-            ScrollView:
-                size_hint: 1, 0.7
-                MDList:
-                    id: new_file_list
+            orientation: 'horizontal'
+            size_hint: 1, 0.3
+            padding: ('0dp', '5dp', '0dp', '10dp')
 
+            Image:
+                id: selected_file_image
+                size_hint: 0.2, 1
+                source: r"C:\pythonCode\rollerAds\media\thumbnails\preview_placeholder.png"
+                
             BoxLayout:
-                orientation: 'horizontal'
-                size_hint: 1, 0.25
-                padding: ('0dp', '5dp', '0dp', '10dp')
+                orientation: 'vertical'
+                size_hint: 0.8, 1
+                pos_hint: {'left': 0.1}
+                                
+                MDLabel:
+                    id: selected_file_name
+                    size_hint: 1, 0.25
+                    text: "File Name:"
+                    markup: True
+                
+                MDLabel:
+                    id: selected_file_path
+                    size_hint: 1, 0.25
+                    text: "File Path:"
+                    markup: True
 
-                Image:
-                    id: selected_file_image
-                    size_hint: 0.2, 1
-                    source: r"C:\pythonCode\rollerAds\media\thumbnails\preview_placeholder.png"
-                    
-                BoxLayout:
-                    orientation: 'vertical'
-                    size_hint: 0.8, 1
-                    pos_hint: {'left': 0.1}
-                                    
-                    MDLabel:
-                        id: selected_file_name
-                        size_hint: 1, 0.33
-                        text: "Selected File:"
-                        markup: True
-                    
-                    MDLabel:
-                        id: selected_file_size
-                        size_hint: 1,0.33
-                        text: "File Size:"
-                        markup: True
+                MDLabel:
+                    id: selected_file_size
+                    size_hint: 1,0.25
+                    text: "File Size:"
+                    markup: True
 
-                    MDLabel:
-                        id: selected_file_created
-                        size_hint: 1,0.33
-                        text: "Created on:"
-                        markup: True
+                MDLabel:
+                    id: selected_file_created
+                    size_hint: 1,0.25
+                    text: "Created on:"
+                    markup: True
 
         BoxLayout:
             id: buttons
@@ -299,3 +334,21 @@ WindowManager:
             
 
 
+<spinner@SpinnerOption>:
+    color: (1, 1, 1, 1)
+    # font_name: TBD
+    background_color: (0.3, 0.3, 0.3, 1)
+
+<AlertPopup>:
+    size_hint: 0.4, 0.4
+    pos_hint: {'center_x': 0.5,'center_y': 0.5}
+    title: "Please Validate Information"
+    BoxLayout:
+        orientation: 'vertical'
+        MDLabel:
+            id: error_message
+            size_hint: 1, 0.9
+        MDRoundFlatButton:
+            size_hint: 1, 0.1
+            text: "Ok"
+            on_press: root.dismiss()
