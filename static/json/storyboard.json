@@ -14,7 +14,9 @@
                 "datetime_start_num": 1666488750,
                 "datetime_end_num": 1666488790,
                 "datetime_start_str": "03:45:12 12/09/2021",
-                "datetime_end_str": "09:55:18 14/09/2021"
+                "datetime_end_str": "09:55:18 14/09/2021",
+                "date_start": "Fri, 18 Oct 2022",
+                "date_end": "Sat, 31 Dec 2024"
             }
         },
         {
@@ -31,7 +33,9 @@
                 "datetime_start_num": 1666482750,
                 "datetime_end_num": 1666482920,
                 "datetime_start_str": "03:45:12 12/09/2021",
-                "datetime_end_str": "09:55:18 14/09/2021"
+                "datetime_end_str": "09:55:18 14/09/2021",
+                "date_start": "Fri, 18 Oct 2022",
+                "date_end": "Sat, 31 Dec 2024"
             }
         },
         {
@@ -48,7 +52,9 @@
                 "datetime_start_num": 1666482700,
                 "datetime_end_num": 1666483250,
                 "datetime_start_str": "03:45:12 12/09/2021",
-                "datetime_end_str": "09:55:18 14/09/2021"
+                "datetime_end_str": "09:55:18 14/09/2021",
+                "date_start": "Fri, 18 Oct 2022",
+                "date_end": "Sat, 31 Dec 2024"
             }
         },
         {
@@ -61,11 +67,13 @@
                 "file_name": "earth.avi",
                 "type": "Video",
                 "format": "AVI",
-                "duration": 2.44,
+                "duration": 2.4,
                 "datetime_start_num": 1666486750,
                 "datetime_end_num": 1666489750,
                 "datetime_start_str": "03:45:12 12/09/2021",
-                "datetime_end_str": "09:55:18 14/09/2021"
+                "datetime_end_str": "09:55:18 14/09/2021",
+                "date_start": "Fri, 18 Oct 2022",
+                "date_end": "Sat, 31 Dec 2024"
             }
         },
         {
@@ -76,13 +84,15 @@
             "playback": {
                 "aka": "WW2 clip",
                 "file_name": "ww2.mp4",
-                "type": "Video",
+                "type": "Document",
                 "format": "MP4",
                 "duration": 8.4,
                 "datetime_start_num": 1666488750,
                 "datetime_end_num": 1666489950,
                 "datetime_start_str": "03:45:12 12/09/2021",
-                "datetime_end_str": "09:55:18 14/09/2021"
+                "datetime_end_str": "09:55:18 14/09/2021",
+                "date_start": "Fri, 18 Oct 2022",
+                "date_end": "Sat, 31 Dec 2024"
             }
         },
         {
@@ -95,11 +105,13 @@
                 "file_name": "hawaii_linux.png",
                 "type": "Video",
                 "format": "PNG",
-                "duration": 6.55,
+                "duration": 6.5,
                 "datetime_start_num": 1666482700,
                 "datetime_end_num": 1666489950,
                 "datetime_start_str": "03:45:12 12/09/2021",
-                "datetime_end_str": "09:55:18 14/09/2021"
+                "datetime_end_str": "09:55:18 14/09/2021",
+                "date_start": "Fri, 18 Oct 2022",
+                "date_end": "Sat, 31 Dec 2024"
             }
         }
     ]

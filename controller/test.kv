@@ -18,8 +18,8 @@ WindowManager:
 
         BoxLayout:
             orientation: 'vertical'
-            spacing: 15
-            padding: ('10dp', '0dp', '10dp', '10dp')
+            spacing: 12
+            padding: ('5dp', '5dp', '5dp', '5dp')
             size_hint: (1, 0.5)
             background_color: 0.5,0.2,0.3,1
             
@@ -27,13 +27,12 @@ WindowManager:
                 markup:True,
                 text:"[b]Active[/b]"
                 font_size: '30dp'
-                size_hint:(0.75, 0.1)
+                size_hint:(0.75, 0.04)
                 halign:"center"
                     
             BoxLayout:
                 orientation:"horizontal"
-                padding:(5, 5, 5, 5)
-                size_hint:(1, 0.8)
+                size_hint:(1, 0.89)
 
                 AnchorLayout:
                     id: table_active
@@ -46,7 +45,7 @@ WindowManager:
             BoxLayout:
                 orientation:"horizontal"
                 spacing:"15dp"
-                size_hint:(1, 0.1)
+                size_hint:(1, 0.07)
 
                 MDRoundFlatIconButton:
                     icon: "application-edit-outline"
@@ -87,9 +86,9 @@ WindowManager:
                 size_hint:(1, 0.8)
 
                 AnchorLayout:
-                    id: table_inactive
                     size_hint: (0.75, 1)
-                
+                    id: table_inactive
+
                 BoxLayout:
                     orientation: 'vertical'
                     spacing:"20dp"
@@ -327,17 +326,11 @@ WindowManager:
             size_hint: 1, 0.05
             MDRoundFlatButton:
                 text: "Add File"
-                on_press: root.add()
+                on_press: root.add_file()
             MDRoundFlatButton:
                 text: "Cancel"
                 on_press: root.cancel()
             
-
-
-<spinner@SpinnerOption>:
-    color: (1, 1, 1, 1)
-    # font_name: TBD
-    background_color: (0.3, 0.3, 0.3, 1)
 
 <AlertPopup>:
     size_hint: 0.4, 0.4
@@ -352,3 +345,9 @@ WindowManager:
             size_hint: 1, 0.1
             text: "Ok"
             on_press: root.dismiss()
+
+
+<spinner@SpinnerOption>:
+    color: (1, 1, 1, 1)
+    # font_name: TBD
+    background_color: (0.3, 0.3, 0.3, 1)

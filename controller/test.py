@@ -2,6 +2,8 @@ import json
 import os
 import platform
 from datetime import datetime as dt
+import uuid
+import cv2
 
 from kivy.core.window import Window
 from kivy.lang import Builder
@@ -15,6 +17,10 @@ from kivymd.uix.label import MDLabel
 from kivymd.uix.datatables import MDDataTable
 from kivymd.uix.pickers import MDDatePicker
 from kivymd.uix.menu import MDDropdownMenu
+
+# TODO: test if we can get rid of update_tables in loadedmedia class
+# TODO: thumbnail creation update
+# TODO: edit properties for new file
 
 
 class LoadedMedia(Screen):
@@ -36,11 +42,11 @@ class LoadedMedia(Screen):
         @mainthread
         def delayed():
             idx = MAIN.SCREEN.get_screen("loadedMedia").ids
-            self.table_active = self.generate_table(
+            MAIN.table_active = self.generate_table(
                 idx.table_active,
                 self.active_formatted,
             )
-            self.table_inactive = self.generate_table(
+            MAIN.table_inactive = self.generate_table(
                 idx.table_inactive,
                 self.inactive_formatted,
             )
@@ -52,11 +58,11 @@ class LoadedMedia(Screen):
         if table.parent.uid < 150:
             thumbnails = self.active_thumbnails
             MAIN.selected_rows[0] = row
-            MAIN.selected_tables[0] = self.active
+            MAIN.selected_tables[0] = MAIN.active
         else:
             thumbnails = self.inactive_thumbnails
             MAIN.selected_rows[1] = row
-            MAIN.selected_tables[1] = self.inactive
+            MAIN.selected_tables[1] = MAIN.inactive
 
         # idx = self.manager.get_screen("editProperties")
         # idx.aka.text = selected_table[row]["playback"]["aka"]
@@ -90,49 +96,49 @@ class LoadedMedia(Screen):
     def move_up(self):
         row = MAIN.selected_rows[0]
         if row > 0:
-            self.active[row]["position"], self.active[row - 1]["position"] = (
-                self.active[row - 1]["position"],
-                self.active[row]["position"],
+            MAIN.active[row]["position"], MAIN.active[row - 1]["position"] = (
+                MAIN.active[row - 1]["position"],
+                MAIN.active[row]["position"],
             )
-            self.update_tables()
+            MAIN.update_tables()
 
     def move_down(self):
         row = MAIN.selected_rows[0]
-        if row < len(self.active_formatted):
-            self.active[row]["position"], self.active[row + 1]["position"] = (
-                self.active[row + 1]["position"],
-                self.active[row]["position"],
+        if row < len(MAIN.selected_tables[0]) - 1:
+            MAIN.active[row]["position"], MAIN.active[row + 1]["position"] = (
+                MAIN.active[row + 1]["position"],
+                MAIN.active[row]["position"],
             )
-            self.update_tables()
+            MAIN.update_tables()
 
     def deactivate(self):
-        if len(self.active) > 0:
+        if len(MAIN.active) > 0:
             row = MAIN.selected_rows[0]
-            self.active[row]["active"] = False
-            self.active[row]["position"] = 999
-            self.update_tables()
+            MAIN.active[row]["active"] = False
+            MAIN.active[row]["position"] = 999
+            MAIN.update_tables()
             MAIN.selected_rows[0], MAIN.selected_tables[0] = -1, None
 
     def activate(self):
-        if len(self.inactive) > 0:
+        if len(MAIN.inactive) > 0:
             row = MAIN.selected_rows[1]
-            self.inactive[row]["active"] = True
-            self.inactive[row]["position"] = 999
-            self.update_tables()
+            MAIN.inactive[row]["active"] = True
+            MAIN.inactive[row]["position"] = 999
+            MAIN.update_tables()
             MAIN.selected_rows[1], MAIN.selected_tables[1] = -1, None
 
     def unload(self):
-        if len(self.inactive) > 0:
+        if len(MAIN.inactive) > 0:
             row = MAIN.selected_rows[1]
-            self.inactive.pop(row)
-            self.update_tables()
+            MAIN.inactive.pop(row)
+            MAIN.update_tables()
             MAIN.selected_rows[1], MAIN.selected_tables[1] = -1, None
 
     def save(self):
         pass
 
     def load_new_file(self):
-        efiles = [i["playback"]["file_name"] for i in self.active + self.inactive]
+        efiles = [i["playback"]["file_name"] for i in MAIN.active + MAIN.inactive]
         files = [
             i for i in os.listdir(self.MEDIA_LOCATION) if i not in efiles and "." in i
         ]
@@ -155,10 +161,10 @@ class LoadedMedia(Screen):
         idx.end.text = MAIN.selected_tables[table][row]["playback"]["date_end"]
         MAIN.table = table
 
-    def update_tables(self):
+    def update_tablesz(self):
         self.split_active_and_inactive(reload=True)
-        self.table_active.update_row_data(self, self.active_formatted)
-        self.table_inactive.update_row_data(self, self.inactive_formatted)
+        MAIN.table_active.update_row_data(self, self.active_formatted)
+        MAIN.table_inactive.update_row_data(self, self.inactive_formatted)
 
     def load_storyboard(self):
         """Load JSON file that holds all media information"""
@@ -174,44 +180,44 @@ class LoadedMedia(Screen):
             mode="r",
         ) as json_file:
             storyboard = json.load(json_file)["loaded_media"]
-        self.active = sorted(
+        MAIN.active = sorted(
             [i for i in storyboard if i["active"]], key=lambda i: i["position"]
         )
-        self.inactive = sorted(
+        MAIN.inactive = sorted(
             [i for i in storyboard if not i["active"]], key=lambda i: i["position"]
         )
 
     def split_active_and_inactive(self, reload=False):
         if reload:
-            ai = self.active + self.inactive
+            ai = MAIN.active + MAIN.inactive
             # select all active, sort them ascending and number consecutive from 1
-            self.active = sorted(
+            MAIN.active = sorted(
                 [i for i in ai if i["active"]], key=lambda i: i["position"]
             )
-            for k, i in enumerate(self.active, start=1):
+            for k, i in enumerate(MAIN.active, start=1):
                 i["position"] = k
             # select all inactive, sort them ascending and number consecutive from 1
-            self.inactive = sorted(
+            MAIN.inactive = sorted(
                 [i for i in ai if not i["active"]], key=lambda i: i["position"]
             )
-            for k, i in enumerate(self.inactive, start=1):
+            for k, i in enumerate(MAIN.inactive, start=1):
                 i["position"] = k
 
         # create list of images for use with thumbnails
-        self.active_thumbnails = [i["thumbnail"] for i in self.active]
-        self.inactive_thumbnails = [i["thumbnail"] for i in self.inactive]
+        self.active_thumbnails = [i["thumbnail"] for i in MAIN.active]
+        self.inactive_thumbnails = [i["thumbnail"] for i in MAIN.inactive]
 
         # flatten information into plain list and add markup formatting
-        self.active_formatted = flatten_and_format(self.active, 14)
-        self.inactive_formatted = flatten_and_format(self.inactive, 14)
+        self.active_formatted = flatten_and_format(MAIN.active, 14)
+        self.inactive_formatted = flatten_and_format(MAIN.inactive, 14)
 
     def generate_table(self, table_id, table_data):
         new_table = MDDataTable(
             column_data=[
                 ("#", dp(15)),
-                ("Name", dp(30)),
-                ("Filename", dp(35)),
-                ("Type", dp(15)),
+                ("Name", dp(35)),
+                ("Filename", dp(40)),
+                ("Type", dp(20)),
                 ("Format", dp(15)),
                 ("Duration", dp(25)),
                 ("Start Date", dp(30)),
@@ -219,8 +225,9 @@ class LoadedMedia(Screen):
             ],
             background_color_header="#b0bec5",
             background_color_selected_cell="#FFFFFF",
-            elevation=0,
-            use_pagination=True,
+            elevation=2,
+            use_pagination=False,
+            rows_num=999,
         )
         new_table.row_data = table_data
         new_table.bind(on_row_press=self.row_selected)
@@ -285,8 +292,7 @@ class EditProperties(Screen):
             return
 
         sz = "[size=14]"
-        idx = self.manager.get_screen("loadedMedia")
-        t = idx.table_active if MAIN.table == 0 else idx.table_inactive
+        t = MAIN.table_active if MAIN.table == 0 else MAIN.table_inactive
         t.update_row(
             t.row_data[MAIN.selected_rows[MAIN.table]],
             [
@@ -354,15 +360,59 @@ class AddNewFile(Screen):
         if not filename:
             return
 
+        self.filename = filename[0]
+
         bs = "\\"
-        path = bs.join(filename[0].split(bs)[:-1])
-        self.ids.selected_file_name.text = f"File Name: {filename[0].split(bs)[-1]}"
-        self.ids.selected_file_path.text = f"File Path: {path}"
-        self.ids.selected_file_size.text = (
-            f"File Size: {os.path.getsize(filename[0])//1024:,} Kb"
+        path = bs.join(self.filename.split(bs)[:-1])
+        self.ids.selected_file_name.text = (
+            f"[b]File Name:[/b] {self.filename.split(bs)[-1]}"
         )
-        self.ids.selected_file_created.text = f"Created on: {dt.fromtimestamp(os.path.getctime(filename[0])).strftime('%a, %d %b %Y')}"
-        self.ids.selected_file_image.source = filename[0]
+        self.ids.selected_file_path.text = f"[b]File Path:[/b] {path}"
+        self.ids.selected_file_size.text = (
+            f"[b]File Size:[/b] {os.path.getsize(self.filename)//1024:,} Kb"
+        )
+        self.ids.selected_file_created.text = f"[b]Created on:[/b] {dt.fromtimestamp(os.path.getctime(self.filename)).strftime('%a, %d %b %Y')}"
+        self.ids.selected_file_image.source = self.filename
+
+    def add_file(self):
+        id = uuid.uuid4().hex
+        thumbnail_file_name = id[:6] + ".jpg"
+        # create thumbnail
+        video = cv2.VideoCapture(self.filename)
+        k = 0
+        res, frame = video.read()
+        while res and k < 50:
+            res, frame = video.read()
+            k += 1
+        frame = cv2.resize(frame, (100, 100))
+        cv2.imwrite(
+            os.path.join(MAIN.MEDIA_LOCATION, "thumbnails", thumbnail_file_name), frame
+        )
+
+        new_file = {
+            "id": uuid.uuid4().hex,
+            "active": False,
+            "position": 99,
+            "thumbnail": thumbnail_file_name,
+            "playback": {
+                "aka": "Temp",
+                "file_name": self.filename.split("\\")[-1],
+                "type": "Pending",
+                "format": "Pend",
+                "duration": 8.4,
+                "datetime_start_num": 1666488750,
+                "datetime_end_num": 1666489950,
+                "datetime_start_str": "03:45:12 12/09/2021",
+                "datetime_end_str": "09:55:18 14/09/2021",
+                "date_start": "Fri, 18 Oct 2022",
+                "date_end": "Sat, 31 Dec 2024",
+            },
+        }
+        MAIN.inactive.append(new_file)
+        print("before", MAIN.active_thumbnails)
+        MAIN.update_tables()
+        print("after", MAIN.active_thumbnails)
+        self.manager.current = "loadedMedia"
 
 
 class AlertPopup(Popup):
@@ -375,6 +425,9 @@ class WindowManager(ScreenManager):
 
 
 class KivyApp(MDApp):
+
+    MEDIA_LOCATION = r"C:\pythonCode\rollerAds\media"
+
     selected_rows = [-1, -1]
     selected_tables = [None, None]
     format_options = {
@@ -386,6 +439,57 @@ class KivyApp(MDApp):
     def build(self):
         self.SCREEN = Builder.load_file("test.kv")
         return self.SCREEN
+
+    def update_tables(self):
+        self.split_active_and_inactive(reload=True)
+        self.table_active.update_row_data(self, self.active_formatted)
+        self.table_inactive.update_row_data(self, self.inactive_formatted)
+
+    def load_storyboard(self):
+        """Load JSON file that holds all media information"""
+
+        # get absolute path depending on OS
+        directories = {
+            "Windows": r"C:\pythonCode\rollerAds\static",
+            "Linux": r"/home/pi/pythonCode/rollerAds\static",
+        }
+        # open storyboard JSON data and split into active and not active
+        with open(
+            os.path.join(directories[platform.system()], "json", "storyboard.json"),
+            mode="r",
+        ) as json_file:
+            storyboard = json.load(json_file)["loaded_media"]
+        self.active = sorted(
+            [i for i in storyboard if i["active"]], key=lambda i: i["position"]
+        )
+        self.inactive = sorted(
+            [i for i in storyboard if not i["active"]], key=lambda i: i["position"]
+        )
+
+    def split_active_and_inactive(self, reload=False):
+        if reload:
+            ai = self.active + self.inactive
+            # select all active, sort them ascending and number consecutive from 1
+            self.active = sorted(
+                [i for i in ai if i["active"]], key=lambda i: i["position"]
+            )
+            for k, i in enumerate(self.active, start=1):
+                i["position"] = k
+            # select all inactive, sort them ascending and number consecutive from 1
+            self.inactive = sorted(
+                [i for i in ai if not i["active"]], key=lambda i: i["position"]
+            )
+            for k, i in enumerate(self.inactive, start=1):
+                i["position"] = k
+
+        # create list of images for use with thumbnails
+        print("HERE!")
+        self.active_thumbnails = [i["thumbnail"] for i in self.active]
+        self.inactive_thumbnails = [i["thumbnail"] for i in self.inactive]
+
+        # flatten information into plain list and add markup formatting
+        self.active_formatted = flatten_and_format(self.active, 14)
+        self.inactive_formatted = flatten_and_format(self.inactive, 14)
 
 
 def flatten_and_format(data, size):

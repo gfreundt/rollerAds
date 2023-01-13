@@ -1,0 +1,5 @@
+{
+    "python.formatting.provider": "black",
+    "materialkv.pythonFile": "main.py",
+    "python.analysis.typeCheckingMode": "basic"
+}
