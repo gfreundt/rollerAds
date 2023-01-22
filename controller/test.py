@@ -3,7 +3,6 @@ import os
 import platform
 from datetime import datetime as dt
 import uuid
-import cv2
 
 from kivy.core.window import Window
 from kivy.lang import Builder
@@ -16,11 +15,15 @@ from kivymd.app import MDApp
 from kivymd.uix.label import MDLabel
 from kivymd.uix.datatables import MDDataTable
 from kivymd.uix.pickers import MDDatePicker
-from kivymd.uix.menu import MDDropdownMenu
 
-# TODO: test if we can get rid of update_tables in loadedmedia class
 # TODO: thumbnail creation update
 # TODO: edit properties for new file
+# TODO: save new storyboard.json with updated info
+# TODO: confirmation for unload
+# TODO: dashboard: total time, media time breakdown, etc
+# TODO: video thumbnails
+# TODO: preview storyboard
+# TODO: advanced scheduling
 
 
 class LoadedMedia(Screen):
@@ -41,7 +44,8 @@ class LoadedMedia(Screen):
         # load generated data into table and replace layout placeholder
         @mainthread
         def delayed():
-            idx = MAIN.SCREEN.get_screen("loadedMedia").ids
+            # idx = MAIN.SCREEN.get_screen("loadedMedia").ids
+            idx = MAIN.loadedMediaScreenIds
             MAIN.table_active = self.generate_table(
                 idx.table_active,
                 self.active_formatted,
@@ -161,11 +165,6 @@ class LoadedMedia(Screen):
         idx.end.text = MAIN.selected_tables[table][row]["playback"]["date_end"]
         MAIN.table = table
 
-    def update_tablesz(self):
-        self.split_active_and_inactive(reload=True)
-        MAIN.table_active.update_row_data(self, self.active_formatted)
-        MAIN.table_inactive.update_row_data(self, self.inactive_formatted)
-
     def load_storyboard(self):
         """Load JSON file that holds all media information"""
 
@@ -242,24 +241,6 @@ class EditProperties(Screen):
         self.type_values = list(MAIN.format_options.keys())
         self.format_values = ""  # MAIN.format_options[self.ids.type.text]
 
-        """
-        self.dropdown = MDDropdownMenu()
-        self.dropdown.items = [
-            {
-                "viewclass": "MDMenuItem",
-                "icon": "git",
-                "text": "Example",
-                "callback": self.test,
-            },
-            {
-                "viewclass": "MDMenuItem",
-                "icon": "git",
-                "text": "Test",
-                "callback": self.test,
-            },
-        ]
-        """
-
         # copy complete information to reassemble record for json archive
         # self.full_record = row_data
         # extract playback information from full record
@@ -308,30 +289,6 @@ class EditProperties(Screen):
         )
         self.manager.current = "loadedMedia"
 
-        """
-        self.response = self.full_record | (
-            {
-                "playback": {
-                    "aka": self.ids.aka.text,
-                    "file_name": self.ids.file_name.text,
-                    "type": self.ids.type.text,
-                    "format": self.ids.format.text,
-                    "duration": self.ids.duration.text,
-                    "datetime_start_num": dt.strptime(
-                        self.ids.begin.text, "%H:%M:%S %d/%m/%Y"
-                    ),
-                    "datetime_end_num": dt.strptime(
-                        self.ids.end.text, "%H:%M:%S %d/%m/%Y"
-                    ),
-                    "datetime_start_str": self.ids.begin.text,
-                    "datetime_end_str": self.ids.end.text,
-                }
-            }
-        )
-
-        
-        """
-
     def date_picker(self):
         today = dt.now()
         dialog = MDDatePicker(
@@ -361,7 +318,6 @@ class AddNewFile(Screen):
             return
 
         self.filename = filename[0]
-
         bs = "\\"
         path = bs.join(self.filename.split(bs)[:-1])
         self.ids.selected_file_name.text = (
@@ -427,7 +383,6 @@ class WindowManager(ScreenManager):
 class KivyApp(MDApp):
 
     MEDIA_LOCATION = r"C:\pythonCode\rollerAds\media"
-
     selected_rows = [-1, -1]
     selected_tables = [None, None]
     format_options = {
@@ -438,6 +393,7 @@ class KivyApp(MDApp):
 
     def build(self):
         self.SCREEN = Builder.load_file("test.kv")
+        self.loadedMediaScreenIds = self.SCREEN.get_screen("loadedMedia").ids
         return self.SCREEN
 
     def update_tables(self):
