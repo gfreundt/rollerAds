@@ -10,26 +10,36 @@ from kivy.uix.label import Label
 from kivy.app import App
 from kivy.graphics import Rectangle, Color
 from kivy.uix.behaviors import ButtonBehavior
-
+from kivy.uix.button import Button
+from kivy.uix.textinput import TextInput
 
 from kivymd.app import MDApp
 from kivymd.uix.label import MDLabel
+
 from kivymd.uix.datatables import MDDataTable
 from kivymd.uix.pickers import MDDatePicker
 
 
-class LineLabel(ButtonBehavior, Label):
-    def __init__(self, **kwargs):
+class TableRow(ButtonBehavior, BoxLayout):
+    def __init__(self, row_num, **kwargs):
         super().__init__(**kwargs)
+        self.orientation = "horizontal"
+        self.row_num = row_num
+        # self.ids = {("Row" + str(assign)): ""}
 
     def on_press(self):
-        MAIN.row_selected = list(self.ids.keys())[0]
-        MAIN.update_table()
+        MAIN.row_selected = x = list(self.ids.keys())[0]
+        print(MAIN.row_selected, x)
 
 
 class Table(BoxLayout):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        self.draw_table()
+
+    def draw_table(self):
+        print("yes")
+        self.lines = []
         self.orientation = "vertical"
         title = Label(text="Title")
         self.add_widget(title)
@@ -40,10 +50,22 @@ class Table(BoxLayout):
                 Rectangle(pos=(0, 500 - (100 * i)), size=(1200, 100))
         for i in range(6):
             data_line = BoxLayout(orientation="horizontal")
+            data_line.bind(on_press=self.test)
             for j in range(7):
-                info = LineLabel(ids={i: ""}, text=f"Data {str(i)} - {str(j)}")
+                info = Label(text=f"Data {str(i)} - {str(j)}")
                 data_line.add_widget(info)
             self.add_widget(data_line)
+
+    def test(self):
+        print("test")
+
+    # def on_press(self):
+    #     print(dir(self))
+    #     print(self.children)
+    #     print("table")
+
+    def foo(self):
+        print("foo")
 
 
 class KivyApp(App):
@@ -51,7 +73,9 @@ class KivyApp(App):
     row_selected = -1
 
     def build(self):
-        return Table()
+        self.DOG = Builder.load_file("table.kv")
+        print(self.DOG.ids)
+        return self.DOG
 
     def update_table(self):
         pass
