@@ -10,6 +10,10 @@ from kivy.metrics import dp
 from kivy.uix.screenmanager import Screen, ScreenManager
 from kivy.uix.popup import Popup
 from kivy.clock import mainthread
+from kivy.uix.behaviors import ButtonBehavior
+from kivy.properties import ListProperty
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
 
 from kivymd.app import MDApp
 from kivymd.uix.label import MDLabel
@@ -24,6 +28,70 @@ from kivymd.uix.pickers import MDDatePicker
 # TODO: video thumbnails
 # TODO: preview storyboard
 # TODO: advanced scheduling
+
+
+class TableColumnTitles(BoxLayout):
+
+    color = ListProperty([0, 0, 0, 1])  # placeholder to avoid error
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.color = MAIN.TITLE_COLOR
+
+
+class TableRow(ButtonBehavior, BoxLayout):
+
+    color = ListProperty([0, 0, 0, 1])  # placeholder to avoid error
+
+    def __init__(self, row_num, **kwargs):
+        super().__init__(**kwargs)
+        self.orientation = "horizontal"
+        self.row = row_num
+        self.colorUnselected1 = MAIN.ROW_COLOR_UNSEL1
+        self.colorUnselected2 = MAIN.ROW_COLOR_UNSEL2
+        self.colorSelected = MAIN.ROW_COLOR_SELECT
+        self.color = self.row_color(row_num)
+
+    def on_press(self):
+        previous, MAIN.row_selected = MAIN.row_selected, self.row
+        # switch color of previous selected back to regular
+        self.color = self.row_color(self.row)
+        # switch color of selected to specific color
+        MAIN.row_objects[previous].color = self.row_color(previous)
+
+    def row_color(self, row):
+        return (
+            self.colorSelected
+            if row == MAIN.row_selected
+            else self.colorUnselected1
+            if row % 2 == 0
+            else self.colorUnselected2
+        )
+
+
+class Table(BoxLayout):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.orientation = "vertical"
+        self.draw_table()
+
+    def draw_table(self):
+        num_rows, num_cols = len(MAIN.table_data) - 1, len(MAIN.table_data[0])
+
+        # build Column Titles
+        title = TableColumnTitles()
+        for col in range(num_cols):
+            title.add_widget(Label(text=MAIN.table_data[0][col]))
+        self.add_widget(title)
+
+        # build Rows and Row Data
+        MAIN.row_objects = []
+        for row in range(num_rows):
+            self.data_line = TableRow(row)
+            for col in range(num_cols):
+                self.data_line.add_widget(Label(text=MAIN.table_data[row + 1][col]))
+            self.add_widget(self.data_line)
+            MAIN.row_objects.append(self.data_line)
 
 
 class LoadedMedia(Screen):
@@ -55,7 +123,7 @@ class LoadedMedia(Screen):
                 self.inactive_formatted,
             )
 
-        delayed()
+        # delayed()
 
     def row_selected(self, table, cell):
         row = cell.index // 8
@@ -383,6 +451,11 @@ class WindowManager(ScreenManager):
 class KivyApp(MDApp):
 
     MEDIA_LOCATION = r"C:\pythonCode\rollerAds\media"
+    TITLE_COLOR = ListProperty([0.3, 0.3, 0.7, 1])
+    ROW_COLOR_UNSEL1 = ListProperty([1, 0, 0, 1])
+    ROW_COLOR_UNSEL2 = ListProperty([0, 1, 0, 1])
+    ROW_COLOR_SELECT = ListProperty([0, 0, 1, 1])
+
     selected_rows = [-1, -1]
     selected_tables = [None, None]
     format_options = {
@@ -392,6 +465,15 @@ class KivyApp(MDApp):
     }
 
     def build(self):
+        self.row_selected = 0
+        self.table_data = [
+            ["Name", "Age", "Gender", "Active"],
+            ["Gabriel", "48", "Male", "Yes"],
+            ["Gabriel", "44", "Male", "Yes"],
+            ["Gabriel", "12", "Male", "Yes"],
+            ["Pepe", "34", "Female", "No"],
+        ]
+
         self.SCREEN = Builder.load_file("test.kv")
         self.loadedMediaScreenIds = self.SCREEN.get_screen("loadedMedia").ids
         return self.SCREEN

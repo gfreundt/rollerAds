@@ -34,7 +34,7 @@ WindowManager:
                 orientation:"horizontal"
                 size_hint:(1, 0.89)
 
-                AnchorLayout:
+                Table:
                     id: table_active
                     size_hint: (0.75, 1)
                 Image:
@@ -85,7 +85,7 @@ WindowManager:
                 orientation:"horizontal"
                 size_hint:(1, 0.8)
 
-                AnchorLayout:
+                Table:
                     size_hint: (0.75, 1)
                     id: table_inactive
 
@@ -345,6 +345,23 @@ WindowManager:
             size_hint: 1, 0.1
             text: "Ok"
             on_press: root.dismiss()
+
+<TableColumnTitles>:
+    canvas.before:
+        Color:
+            rgba: self.color
+        Rectangle:
+            pos: self.pos
+            size: self.size
+
+
+<TableRow>:
+    canvas.before:
+        Color: 
+            rgba: self.color
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
 
 <spinner@SpinnerOption>:

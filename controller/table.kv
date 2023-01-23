@@ -1,7 +1,21 @@
+
+
 Table:
 
-<TableRow>:
-    Label:
-        id: "root.row_num" + root.row_num
+<TableColumnTitles>:
+    canvas.before:
+        Color:
+            rgba: self.color
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
+
+<TableRow>:
+    canvas.before:
+        Color: 
+            rgba: self.color
+        Rectangle:
+            pos: self.pos
+            size: self.size
 
