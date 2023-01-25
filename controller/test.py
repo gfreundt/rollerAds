@@ -89,7 +89,12 @@ class Table(BoxLayout):
         for row in range(num_rows):
             self.data_line = TableRow(row)
             for col in range(num_cols):
-                self.data_line.add_widget(Label(text=MAIN.table_data[row + 1][col]))
+                self.data_line.add_widget(
+                    Label(
+                        text=f"[color=000000][size=17]{MAIN.table_data[row + 1][col]}",
+                        markup=True,
+                    )
+                )
             self.add_widget(self.data_line)
             MAIN.row_objects.append(self.data_line)
 
@@ -443,18 +448,19 @@ class AlertPopup(Popup):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-
-class WindowManager(ScreenManager):
++
+-+-
+.0
     pass
 
 
 class KivyApp(MDApp):
 
     MEDIA_LOCATION = r"C:\pythonCode\rollerAds\media"
-    TITLE_COLOR = ListProperty([0.3, 0.3, 0.7, 1])
-    ROW_COLOR_UNSEL1 = ListProperty([1, 0, 0, 1])
-    ROW_COLOR_UNSEL2 = ListProperty([0, 1, 0, 1])
-    ROW_COLOR_SELECT = ListProperty([0, 0, 1, 1])
+    TITLE_COLOR = ListProperty([0.004, 0, 0.125, 1])
+    ROW_COLOR_UNSEL1 = ListProperty([0.792, 0.914, 0.961, 1])
+    ROW_COLOR_UNSEL2 = ListProperty([0.95, 0.95, 0.95, 1])
+    ROW_COLOR_SELECT = ListProperty([0.392, 0.629, 0.929, 1])
 
     selected_rows = [-1, -1]
     selected_tables = [None, None]
@@ -472,6 +478,11 @@ class KivyApp(MDApp):
             ["Gabriel", "44", "Male", "Yes"],
             ["Gabriel", "12", "Male", "Yes"],
             ["Pepe", "34", "Female", "No"],
+            ["Name", "Age", "Gender", "Active"],
+            ["Gabriel", "48", "Male", "Yes"],
+            ["Gabriel", "44", "Male", "Yes"],
+            ["Gabriel", "12", "Male", "Yes"],
+            ["Pepe", "34", "Female", "No"],
         ]
 
         self.SCREEN = Builder.load_file("test.kv")
@@ -483,9 +494,46 @@ class KivyApp(MDApp):
         self.table_active.update_row_data(self, self.active_formatted)
         self.table_inactive.update_row_data(self, self.inactive_formatted)
 
-    def load_storyboard(self):
-        """Load JSON file that holds all media information"""
+    def load_storyboard(self):PÑ;.moynbhjvfg ++++++
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    -
+    
         # get absolute path depending on OS
         directories = {
             "Windows": r"C:\pythonCode\rollerAds\static",
