@@ -5,22 +5,26 @@ from kivy.uix.label import Label
 from kivy.app import App
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.properties import ListProperty
+from kivy.graphics import Rectangle, Color
 
 
 class TableColumnTitles(BoxLayout):
 
     color = ListProperty([0, 0, 0, 1])  # placeholder to avoid error
 
-    def __init__(self, **kwargs):
+    def __init__(self, pos, size, **kwargs):
         super().__init__(**kwargs)
         self.color = MAIN.TITLE_COLOR
+        with self.canvas:
+            Color(0.4, 0.5, 0.7)
+            Rectangle(pos=pos, size=size)
 
 
 class TableRow(ButtonBehavior, BoxLayout):
 
     color = ListProperty([0, 0, 0, 1])  # placeholder to avoid error
 
-    def __init__(self, row_num, **kwargs):
+    def __init__(self, row_num, pos, size, **kwargs):
         super().__init__(**kwargs)
         self.orientation = "horizontal"
         self.row = row_num
@@ -28,6 +32,9 @@ class TableRow(ButtonBehavior, BoxLayout):
         self.colorUnselected2 = MAIN.ROW_COLOR_UNSEL2
         self.colorSelected = MAIN.ROW_COLOR_SELECT
         self.color = self.row_color(row_num)
+        with self.canvas:
+            Color(0.2, 0.1, 0.9)
+            Rectangle(pos=self.pos, size=self.size)
 
     def on_press(self):
         previous, MAIN.row_selected = MAIN.row_selected, self.row
@@ -47,26 +54,29 @@ class TableRow(ButtonBehavior, BoxLayout):
 
 
 class Table(BoxLayout):
-    def __init__(self, **kwargs):
+    def __init__(self, column_data, row_data, **kwargs):
         super().__init__(**kwargs)
         self.orientation = "vertical"
+        self.column_data = column_data
+        self.row_data = row_data
         self.draw_table()
 
     def draw_table(self):
-        num_rows, num_cols = len(MAIN.table_data) - 1, len(MAIN.table_data[0])
+        num_rows, num_cols = len(self.row_data), len(self.column_data)
 
         # build Column Titles
-        title = TableColumnTitles()
+        title = TableColumnTitles(self.pos, self.size)
         for col in range(num_cols):
-            title.add_widget(Label(text=MAIN.table_data[0][col]))
+            title.add_widget(Label(text=self.column_data[col]))
         self.add_widget(title)
 
         # build Rows and Row Data
         self.row_objects = []
         for row in range(num_rows):
-            self.data_line = TableRow(row)
+            self.data_line = TableRow(row, self.pos, self.size)
+            print(self.pos, self.size)
             for col in range(num_cols):
-                self.data_line.add_widget(Label(text=MAIN.table_data[row + 1][col]))
+                self.data_line.add_widget(Label(text=self.row_data[row][col]))
             self.add_widget(self.data_line)
             self.row_objects.append(self.data_line)
 
@@ -80,14 +90,14 @@ class KivyApp(App):
 
     def build(self):
         self.row_selected = 0
-        self.table_data = [
-            ["Name", "Age", "Gender", "Active"],
+        column_data = ["Name", "Age", "Gender", "Active"]
+        row_data = [
             ["Gabriel", "48", "Male", "Yes"],
             ["Gabriel", "44", "Male", "Yes"],
             ["Gabriel", "12", "Male", "Yes"],
             ["Pepe", "34", "Female", "No"],
         ]
-        self.TABLE = Builder.load_file("table.kv")
+        self.TABLE = Table(column_data, row_data)  # Builder.load_file("table.kv")
         return self.TABLE
 
 
