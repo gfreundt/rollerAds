@@ -448,9 +448,8 @@ class AlertPopup(Popup):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-+
--+-
-.0
+
+class WindowManager(ScreenManager):
     pass
 
 
@@ -494,46 +493,9 @@ class KivyApp(MDApp):
         self.table_active.update_row_data(self, self.active_formatted)
         self.table_inactive.update_row_data(self, self.inactive_formatted)
 
-    def load_storyboard(self):PÑ;.moynbhjvfg ++++++
+    def load_storyboard(self):
+        """Load JSON file that holds all media information"""
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    -
-    
         # get absolute path depending on OS
         directories = {
             "Windows": r"C:\pythonCode\rollerAds\static",
