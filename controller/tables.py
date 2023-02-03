@@ -6,134 +6,140 @@ from kivy.uix.label import Label
 from kivy.app import App
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.properties import ListProperty
-from kivy.graphics import Rectangle, Color, Canvas
+from kivy.graphics import Rectangle, Color
 
 
 class TableColumnTitles(BoxLayout):
-    color = ListProperty([0.004, 0, 0.125, 1])
-
-    def __init__(self, pos, size, **kwargs):
-        super().__init__(**kwargs)
-        with self.canvas.before:
-            Color(self.color[0], self.color[1], self.color[2])
-            Rectangle(pos=pos, size=size)
-
-
-class TableRow(ButtonBehavior, RelativeLayout):
-    colorUnselected1 = ListProperty([0.792, 0.914, 0.961, 1])
-    colorUnselected2 = ListProperty([0.95, 0.95, 0.95, 1])
-    colorSelected = ListProperty([0.392, 0.629, 0.929, 1])
-    row_objects = []
-
-    def __init__(self, instance, row_num, total_rows, **kwargs):
+    def __init__(self, instance, column_data, **kwargs):
         super().__init__(**kwargs)
         self.instance = instance
-        self.row_objects.append(self)
+        # background
+        with self.canvas.before:
+            self.shape_color = Color(rgba=(0.004, 0.5, 0.125, 1))
+            self.shape = Rectangle(
+                pos=self.pos,
+                size=self.pos,
+            )
+            self.bind(size=self.update_shape)
+        # create headers
+        for c, col in enumerate(column_data):
+            self.add_widget(
+                Label(
+                    text=f"[size=18][b]{col}",
+                    markup=True,
+                    pos_hint={"center_x": (c + 0.5) / 4, "center_y": 0.5},
+                    size_hint=(self.instance.col_widths[c], 1),
+                )
+            )
+
+    def update_shape(self, *args):
+        # maintain dimensions in case window is resized
+        self.shape.size = self.size
+        self.shape.pos = self.pos
+
+
+class TableRow(ButtonBehavior, BoxLayout):
+    bg_color = ListProperty([0.392, 0.629, 0.929, 1])
+
+    def __init__(self, instance, row_num, **kwargs):
+        super().__init__(**kwargs)
+        # set widget attributes
         self.orientation = "horizontal"
+        self.instance = instance
         self.row = row_num
-        self.total_rows = total_rows
-
-        # static alternate color lines
-        self.color = self.row_color(row_num)
-        with self.canvas:
-            Color(self.color[0], self.color[1], self.color[2])
-            Rectangle(
-                pos=self.pos, size=(Window.width, Window.height / (self.total_rows + 1))
-            )
-
-        # print table text
+        # print data into rows/columns
         for c, _ in enumerate(self.instance.column_data):
-            label = Label(
-                text=f"[size=16][color=000]{self.instance.row[c]}",
-                markup=True,
-                pos_hint={"center_x": (c + 0.5) / 4, "center_y": 0.5},
+            self.add_widget(
+                Label(
+                    text=f"[size=16][color=000]{self.instance.row[c]}",
+                    markup=True,
+                    size_hint=(self.instance.col_widths[c], 1),
+                    pos_hint={"center_x": (c + 0.5) / 4, "center_y": 0.5},
+                )
             )
-            self.add_widget(label)
-            self.ids[f"label{c}"] = label
+        self.draw()
 
-    def row_color(self, row):
-        return self.colorUnselected1 if row % 2 == 0 else self.colorUnselected2
+    def draw(self, *_args):
+        # background for each row
+        with self.canvas.before:
+            self.shape_color = (
+                Color(rgba=(0.792, 0.914, 0.961, 1))
+                if self.row % 2 == 0
+                else Color(rgba=(0.95, 0.95, 0.95, 1))
+            )
+            self.shape = Rectangle(
+                pos=self.pos,
+                size=self.size,
+            )
+            self.bind(size=self.update_shape)
 
-    def on_press(self):
-        # ignore press if click on same row as already selected
+    def on_press(self, *_args):
+        # skip if clicked row is same as selected row
         if self.row == self.instance.previous_row:
             return
-
-        # deselected color line only if line selected
+        # set color of selected row
+        self.bg_color = (0.392, 0.629, 0.9, 1)
+        # set color of deselected row
         if self.instance.previous_row > -1:
-
-            color = self.row_color(self.instance.previous_row)
-            with self.instance.row_sel.canvas:
-                Color(color[0], color[1], color[2])
-                Rectangle(
-                    pos=[0, 0],
-                    size=(Window.width, Window.height / (self.total_rows + 1)),
-                )
-
-        # selected color line
-        color = self.colorSelected
-        with self.canvas:
-            Color(color[0], color[1], color[2])
-            Rectangle(
-                pos=[0, 0],
-                size=(Window.width, Window.height / (self.total_rows + 1)),
+            self.instance.row_sel.bg = (
+                (0.792, 0.914, 0.961, 1)
+                if self.instance.previous_row % 2 == 0
+                else (0.95, 0.95, 0.95, 1)
             )
+        # keep values of selected row for when its deselected
         self.instance.previous_row = self.row
         self.instance.row_sel = self
 
-        # rewrite line text
-        print("Content:", self.ids.label0.text)
-        print("Content:", self.ids.label1.text)
-        print("Content:", self.ids.label2.text)
-        print("Content:", self.ids.label3.text)
+    def update_shape(self, *_args):
+        # maintain dimensions in case window is resized
+        self.shape.size = [self.size[0], self.size[1] * 0.99]
+        self.shape.pos = self.pos
 
-        self.ids.label0.text = "[size=16][color=000]stoopid"
+    def on_bg(self, *_args):
+        self.shape_color.rgba = self.bg_color
 
 
 class Table(BoxLayout):
-
-    color = ListProperty([0.95, 0.95, 0.95, 1])
-
     def __init__(self, column_data, row_data, **kwargs):
         super().__init__(**kwargs)
         self.orientation = "vertical"
         self.column_data = column_data
         self.row_data = row_data
+        self.total_rows = len(row_data)
         self.previous_row = -1
-        self.draw_table()
+        self.create_table()
 
-    def draw_table(self):
+    def create_table(self):
+        # calculate column widths
+        col = [
+            max([len(self.row_data[i][j]) for i, _ in enumerate(self.row_data)])
+            for j, _ in enumerate(self.row_data[0])
+        ]
+        self.col_widths = [i / sum(col) for i in col]
+
         # build Column Titles
-        title = TableColumnTitles(self.pos, self.size)
-        for col in self.column_data:
-            title.add_widget(Label(text=f"[size=18][b]{col}", markup=True))
-        self.add_widget(title)
+        self.add_widget(TableColumnTitles(self, self.column_data))
 
         # build Rows and Row Data
         for r, self.row in enumerate(self.row_data):
-            self.data_line = TableRow(self, r, len(self.row_data))
+            self.data_line = TableRow(self, r)
             self.add_widget(self.data_line)
 
 
 class KivyApp(App):
-
-    TITLE_COLOR = ListProperty([0.004, 0, 0.125, 1])
-    ROW_COLOR_UNSEL1 = ListProperty([0.792, 0.914, 0.961, 1])
-    ROW_COLOR_UNSEL2 = ListProperty([0.95, 0.95, 0.95, 1])
-    ROW_COLOR_SELECT = ListProperty([0.392, 0.629, 0.929, 1])
-
     def build(self):
-        self.row_selected = 0
-        column_data = ["Name", "Age", "Gender", "Active"]
+        column_data = ["Name", "Age", "Gender", "Active", "Zip Code", "Country"]
         row_data = [
-            ["Gabriel", "48", "Male", "Yes"],
-            ["Juan", "44", "Female", "Yes"],
-            ["Pedro", "12", "Male", "Yes"],
-            ["Pepe", "34", "Female", "No"],
-            ["Claudia", "23", "Female", "No"],
+            ["Gabriel", "48", "Male", "Yes", "56789", "Peru"],
+            ["Juan", "44", "Female", "Yes", "56789", "Peru"],
+            ["Pedro", "12", "Male", "Yes", "56789", "Peru"],
+            ["Pepe", "34", "Female", "No", "56789", "Peru"],
+            ["Claudia", "23", "Female", "No", "56789", "Peru"],
+            ["Rodrigo", "99", "Male", "yes", "56789", "Peru"],
+            ["Max", "99", "Male", "yes", "56789", "Peru"],
+            ["Juan", "44", "Female", "Yes", "56789", "Peru"],
         ]
-        self.TABLE = Table(column_data, row_data)  # Builder.load_file("table.kv")
-        return self.TABLE
+        return Table(column_data, row_data)
 
 
 # Basic Kivy parameters
