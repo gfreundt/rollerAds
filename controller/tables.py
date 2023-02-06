@@ -1,12 +1,10 @@
-from kivy.core.window import Window
-from kivy.lang import Builder
-from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.relativelayout import RelativeLayout
-from kivy.uix.label import Label
 from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.uix.label import Label
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.properties import ListProperty
 from kivy.graphics import Rectangle, Color
+from kivy.clock import mainthread
 
 
 class TableColumnTitles(BoxLayout):
@@ -32,7 +30,7 @@ class TableColumnTitles(BoxLayout):
                 )
             )
 
-    def update_shape(self, *args):
+    def update_shape(self, *_args):
         # maintain dimensions in case window is resized
         self.shape.size = self.size
         self.shape.pos = self.pos
@@ -81,7 +79,7 @@ class TableRow(ButtonBehavior, BoxLayout):
         self.bg_color = (0.392, 0.629, 0.9, 1)
         # set color of deselected row
         if self.instance.previous_row > -1:
-            self.instance.row_sel.bg = (
+            self.instance.row_sel.bg_color = (
                 (0.792, 0.914, 0.961, 1)
                 if self.instance.previous_row % 2 == 0
                 else (0.95, 0.95, 0.95, 1)
@@ -89,25 +87,33 @@ class TableRow(ButtonBehavior, BoxLayout):
         # keep values of selected row for when its deselected
         self.instance.previous_row = self.row
         self.instance.row_sel = self
+        self.instance.row_sel_num = self.row
 
     def update_shape(self, *_args):
         # maintain dimensions in case window is resized
-        self.shape.size = [self.size[0], self.size[1] * 0.99]
+        self.shape.size = [self.size[0], self.size[1] * 0.98]
         self.shape.pos = self.pos
 
-    def on_bg(self, *_args):
+    def on_bg_color(self, *_args):
+        # triggered when background color variable value changes
         self.shape_color.rgba = self.bg_color
 
 
 class Table(BoxLayout):
-    def __init__(self, column_data, row_data, **kwargs):
+    column_data = ListProperty()
+    row_data = ListProperty()
+
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.orientation = "vertical"
-        self.column_data = column_data
-        self.row_data = row_data
-        self.total_rows = len(row_data)
         self.previous_row = -1
-        self.create_table()
+        self.row_sel_num = -1
+
+        @mainthread
+        def delayed():
+            self.create_table()
+
+        delayed()
 
     def create_table(self):
         # calculate column widths
@@ -125,6 +131,14 @@ class Table(BoxLayout):
             self.data_line = TableRow(self, r)
             self.add_widget(self.data_line)
 
+    def update_row_data(self, **kwargs):
+        self.row_data = kwargs["row_data"]
+        self.clear_widgets()
+        self.create_table()
+
+    def update_single_row(self, **kwargs):
+        print("**")
+
 
 class KivyApp(App):
     def build(self):
@@ -139,11 +153,13 @@ class KivyApp(App):
             ["Max", "99", "Male", "yes", "56789", "Peru"],
             ["Juan", "44", "Female", "Yes", "56789", "Peru"],
         ]
-        return Table(column_data, row_data)
+        return Table(column_data=column_data, row_data=row_data)
 
 
-# Basic Kivy parameters
-Window.size = (1200, 450)
-Window.top, Window.left = 50, 50
-MAIN = KivyApp()
-MAIN.run()
+if __name__ == "__main__":
+    from kivy.core.window import Window
+
+    # Basic Kivy parameters
+    Window.size = (1200, 450)
+    Window.top, Window.left = 50, 50
+    KivyApp().run()

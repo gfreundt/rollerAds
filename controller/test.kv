@@ -12,6 +12,7 @@ WindowManager:
 
 <LoadedMedia>:
     name: "loadedMedia"
+
     BoxLayout:
         orientation: 'vertical'
         background_color: 0.5,0.2,0.3,1
@@ -37,6 +38,8 @@ WindowManager:
                 Table:
                     id: table_active
                     size_hint: (0.75, 1)
+                    column_data: root.column_data
+                    row_data: root.active_data_formatted
                 Image:
                     id: image_preview
                     source: r"C:\pythonCode\rollerAds\media\thumbnails\preview_placeholder.png"
@@ -52,7 +55,7 @@ WindowManager:
                     text: "Edit"
                     on_press: 
                         root.manager.transition = FallOutTransition()
-                        root.edit(0)
+                        root.edit()
 
                 MDRoundFlatIconButton:
                     icon: "arrow-up-thick"
@@ -88,6 +91,8 @@ WindowManager:
                 Table:
                     size_hint: (0.75, 1)
                     id: table_inactive
+                    column_data: root.column_data
+                    row_data: root.inactive_data_formatted
 
                 BoxLayout:
                     orientation: 'vertical'
@@ -117,12 +122,12 @@ WindowManager:
                 padding:(5, 5, 5, 5)
                 size_hint:(1, 0.1)
 
-                MDRoundFlatIconButton:
-                    icon: "application-edit-outline"
-                    text:"Edit"
-                    on_press: 
-                        root.manager.transition = FallOutTransition()
-                        root.edit(1)
+                # MDRoundFlatIconButton:
+                #     icon: "application-edit-outline"
+                #     text:"Edit"
+                #     on_press: 
+                #         root.manager.transition = FallOutTransition()
+                #         root.edit()
 
                 MDRoundFlatIconButton:
                     text:"Activate"
@@ -346,26 +351,26 @@ WindowManager:
             text: "Ok"
             on_press: root.dismiss()
 
-<TableColumnTitles>:
-    canvas.before:
-        Color:
-            rgba: self.color
-        Rectangle:
-            pos: self.pos
-            size: self.size
+# <TableColumnTitles>:
+#     canvas.before:
+#         Color:
+#             rgba: self.color
+#         Rectangle:
+#             pos: self.pos
+#             size: self.size
 
 
-<TableRow>:
-    canvas.before:
-        Color: 
-            rgba: self.color
-        Rectangle:
-            pos: self.pos
-            size: self.size
-        Color:
-            rgba: (0.4,0.4,0.4,1)
-        Line:
-            points: (self.x, self.y, self.width, self.y)
+# <TableRow>:
+#     canvas.before:
+#         Color: 
+#             rgba: self.color
+#         Rectangle:
+#             pos: self.pos
+#             size: self.size
+#         Color:
+#             rgba: (0.4,0.4,0.4,1)
+#         Line:
+#             points: (self.x, self.y, self.width, self.y)
             
 
 
