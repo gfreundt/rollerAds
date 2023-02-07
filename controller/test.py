@@ -1,10 +1,13 @@
-import json
+import json, time
 import os
 import platform
 from datetime import datetime as dt
 from datetime import timedelta
 import uuid
 import filetype
+import vlc
+import threading
+import cv2
 
 from tables import Table
 
@@ -25,6 +28,52 @@ from kivymd.uix.pickers import MDDatePicker
 # TODO: video thumbnails
 # TODO: preview storyboard
 # TODO: advanced scheduling
+
+
+class MainMenu(Screen):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.interrupt = False
+
+    def play(self):
+        all_active_media = [i["playback"] for i in MAIN.active_data]
+        while True:
+            for play_this in all_active_media:
+                if play_this["type"] == "Video":
+                    media = cv2.VideoCapture(
+                        os.path.join(MAIN.MEDIA_LOCATION, play_this["file_name"])
+                    )
+                    fps = int(media.get(cv2.CAP_PROP_FPS))
+                    while media.isOpened():
+                        ret, frame = media.read()
+                        if ret:
+                            time.sleep(1 / fps)
+                            cv2.imshow("frame", frame)
+                            if cv2.waitKey(1) & 0xFF == 27:
+                                cv2.destroyAllWindows()
+                                return
+                        else:
+                            break
+                else:
+                    media = cv2.imread(
+                        os.path.join(MAIN.MEDIA_LOCATION, play_this["file_name"])
+                    )
+                    cv2.imshow("media", media)
+                    start = dt.now()
+                    while dt.now() - start < timedelta(seconds=play_this["duration"]):
+                        if cv2.waitKey(1) & 0xFF == 27:
+                            cv2.destroyAllWindows()
+                            return
+                cv2.destroyAllWindows()
+
+    def edit(self):
+        self.manager.current = "loadedMedia"
+
+    def settings(self):
+        self.manager.current = "loadedMedia"
+
+    def quit(self):
+        quit()
 
 
 class LoadedMedia(Screen):

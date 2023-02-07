@@ -6,9 +6,52 @@
 
 
 WindowManager:
+    MainMenu:
     LoadedMedia:
     EditProperties:
     AddNewFile:
+
+<MainMenu>:
+    name: "mainMenu"
+
+    BoxLayout:
+        orientation:'vertical'
+        background_color: (0.5, 0.4, 0.3)
+        MDLabel:
+            markup: True
+            text: "Main Menu"
+            font_size: "45dp"
+            size_hint: (1,0.2)
+            halign: "center"
+        MDRoundFlatIconButton:
+            pos_hint: {"center_x":0.5}
+            icon: "play-outline"
+            text: "Play Storyboard"
+            on_press: 
+                root.manager.transition = FallOutTransition()
+                root.play()
+        MDRoundFlatIconButton:
+            pos_hint: {"center_x":0.5}
+            icon: "playlist-edit"
+            text: "Edit Storyboard"
+            on_press: 
+                root.manager.transition = FallOutTransition()
+                root.edit()
+        MDRoundFlatIconButton:
+            pos_hint: {"center_x":0.5}
+            icon: "cogs"
+            text: "Settings"
+            on_press: 
+                root.manager.transition = FallOutTransition()
+                root.settings()
+        MDRoundFlatIconButton:
+            pos_hint: {"center_x":0.5}
+            icon: "exit-to-app"
+            text: "Quit"
+            on_press: 
+                root.manager.transition = FallOutTransition()
+                root.quit()
+
 
 <LoadedMedia>:
     name: "loadedMedia"
@@ -114,6 +157,11 @@ WindowManager:
                             root.manager.transition = NoTransition()
                             root.manager.current = "addNewFile"
                             root.load_new_file()
+                    MDRoundFlatIconButton:
+                        icon: "content-save-outline"
+                        text: "Return to Main Manu"
+                        on_press:
+                            root.manager.current = "mainMenu"
 
 
             BoxLayout:
