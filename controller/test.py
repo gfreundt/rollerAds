@@ -1,11 +1,11 @@
 import json, time
 import os
 import platform
+import shutil
 from datetime import datetime as dt
 from datetime import timedelta
 import uuid
 import filetype
-import vlc
 import threading
 import cv2
 
@@ -70,6 +70,7 @@ class MainMenu(Screen):
         self.manager.current = "loadedMedia"
 
     def settings(self):
+        # TODO: develop settings
         self.manager.current = "loadedMedia"
 
     def quit(self):
@@ -100,14 +101,11 @@ class LoadedMedia(Screen):
 
     def load_storyboard(self):
         """Load JSON file that holds all media information"""
-        # get absolute path depending on OS
-        directories = {
-            "Windows": r"C:\pythonCode\rollerAds\static",
-            "Linux": r"/home/pi/pythonCode/rollerAds\static",
-        }
         # open storyboard JSON data and split into active and not active
         with open(
-            os.path.join(directories[platform.system()], "json", "storyboard.json"),
+            os.path.join(
+                MAIN.directories[platform.system()], "json", "storyboard.json"
+            ),
             mode="r",
         ) as json_file:
             storyboard = json.load(json_file)["loaded_media"]
@@ -124,8 +122,6 @@ class LoadedMedia(Screen):
         row = self.ids.table_active.row_sel_num
         if row == -1:
             return
-
-        self.manager.current = "editProperties"
         idx = self.manager.get_screen("editProperties")
         idx.aka.text = MAIN.active_data[row]["playback"]["aka"]
         idx.file_name.text = MAIN.active_data[row]["playback"]["file_name"]
@@ -134,6 +130,7 @@ class LoadedMedia(Screen):
         idx.duration.text = str(MAIN.active_data[row]["playback"]["duration"])
         idx.begin.text = MAIN.active_data[row]["playback"]["date_start"]
         idx.end.text = MAIN.active_data[row]["playback"]["date_end"]
+        self.manager.current = "editProperties"
 
     def move_up(self):
         row = self.ids.table_active.row_sel_num
@@ -181,47 +178,25 @@ class LoadedMedia(Screen):
 
     # Right Menu Buttons
     def save(self):
-        pass
-        # idx = self.manager.get_screen("editProperties")
-        # idx.aka.text = selected_table[row]["playback"]["aka"]
-        # idx.file_name.text = selected_table[row]["playback"]["file_name"]
-        # idx.type.text = selected_table[row]["playback"]["type"]
-        # idx.format.text = selected_table[row]["playback"]["format"]
-        # idx.duration.text = str(selected_table[row]["playback"]["duration"])
-        # idx.begin.text = selected_table[row]["playback"]["datetime_start_str"]
-        # idx.end.text = selected_table[row]["playback"]["datetime_end_str"]
-
-        # copy complete information to reassemble record for json archive
-        # self.full_record = row_data
-        # extract playback information from full record
-        # self.row_record = row_data["playback"]
-        # define ids pointer
-
-        # idx.aka.text = self.row_record["aka"]
-        # idx.file_name.text = self.row_record["file_name"]
-        # idx.type.text = self.full_record["type"]
-        # idx.format.text = self.full_record["format"]
-        # idx.duration.text = str(self.full_record["duration"])
-        # idx.begin.text = self.full_record["datetime_start_str"]
-        # idx.end.text = self.full_record["datetime_end_str"]
-
-        # self.ids.image_preview.source = os.path.join(
-        #     self.MEDIA_LOCATION,
-        #     "thumbnails",
-        #     thumbnails[row],
-        # )
+        with open(
+            os.path.join(
+                MAIN.directories[platform.system()], "json", "storyboard.json"
+            ),
+            mode="w+",
+        ) as json_file:
+            json_file.write(
+                json.dumps({"loaded_media": MAIN.active_data + MAIN.inactive_data})
+            )
+        # TODO: remove thumbnail file
+        # copy file to media folder
+        shutil.copy(
+            MAIN.filename,
+            os.path.join(MAIN.MEDIA_LOCATION, MAIN.filename.split("\\")[-1]),
+        )
 
     def reset(self):
         self.load_storyboard()
         self.update_tables()
-
-    def load_new_file(self):
-        efiles = [
-            i["playback"]["file_name"] for i in MAIN.active_data + MAIN.inactive_data
-        ]
-        files = [
-            i for i in os.listdir(self.MEDIA_LOCATION) if i not in efiles and "." in i
-        ]
 
     def update_tables(self):
         self.split_active_and_inactive()
@@ -257,23 +232,8 @@ class LoadedMedia(Screen):
 class EditProperties(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-
         self.type_values = list(MAIN.format_options.keys())
-        self.format_values = ""  # MAIN.format_options[self.ids.type.text]
-
-        # copy complete information to reassemble record for json archive
-        # self.full_record = row_data
-        # extract playback information from full record
-        # self.row_record = row_data["playback"]
-        # define ids pointer
-
-        # idx.aka.text = self.row_record["aka"]
-        # idx.file_name.text = self.row_record["file_name"]
-        # idx.type.text = self.full_record["type"]
-        # idx.format.text = self.full_record["format"]
-        # idx.duration.text = str(self.full_record["duration"])
-        # idx.begin.text = self.full_record["datetime_start_str"]
-        # idx.end.text = self.full_record["datetime_end_str"]
+        self.format_values = ""
 
     def edit_save(self):
         # validate data entered before saving
@@ -305,24 +265,47 @@ class EditProperties(Screen):
             "datetime_end_str": self.ids.end.text,
         }
 
-        # add entire data record if new file, only "playback" section if edit existing
+        # new file: add entire data record + thumbnail
         if MAIN.edit_add_new_file:
             new_item = {
                 "id": uuid.uuid4().hex,
                 "active": False,
                 "position": 9999,
-                "thumbnail": f"{uuid.uuid4().hex[:6]}.jpg",
+                "thumbnail": f"{uuid.uuid4().hex[:4]}.png",
                 "playback": playback_data,
             }
             MAIN.inactive_data.append(new_item)
+            # create thumbnail
+            self.create_thumbnail(new_item)
+
+        # existing file> replace "playback" section of record
         else:
             row = MAIN.loadedMediaScreenIds.table_active.row_sel_num
             MAIN.active_data[row]["playback"] = playback_data
 
         MAIN.SCREEN.get_screen("loadedMedia").update_tables()
         self.manager.current = "loadedMedia"
-
         MAIN.edit_add_new_file = False
+
+    def create_thumbnail(self, new_item):
+        thumbnail_file_name = new_item["thumbnail"]
+        file_type = new_item["playback"]["type"]
+        file_name = new_item["playback"]["file_name"]
+
+        if file_type == "Image":
+            img = cv2.imread(os.path.join(MAIN.MEDIA_LOCATION, file_name))
+            img = cv2.resize(img, (256, 256))
+        elif file_type == "Video":
+            video = cv2.VideoCapture(self.filename)
+            k = 0
+            res = True
+            while res and k < 50:
+                res, frame = video.read()
+                k += 1
+            img = cv2.resize(frame, (256, 256))
+        cv2.imwrite(
+            os.path.join(MAIN.MEDIA_LOCATION, "thumbnails", thumbnail_file_name), img
+        )
 
     def date_picker(self):
         today = dt.now()
@@ -352,7 +335,7 @@ class AddNewFile(Screen):
         if not filename:
             return
 
-        self.filename = filename[0]
+        self.filename = MAIN.filename = filename[0]
         bs = "\\"
         path = bs.join(self.filename.split(bs)[:-1])
         self.ids.selected_file_name.text = (
@@ -366,23 +349,8 @@ class AddNewFile(Screen):
         self.ids.selected_file_image.source = self.filename
 
     def add_file(self):
-        # create thumbnail
-        """
-        video = cv2.VideoCapture(self.filename)
-        k = 0
-        res, frame = video.read()
-        while res and k < 50:
-            res, frame = video.read()
-            k += 1
-        frame = cv2.resize(frame, (100, 100))
-        cv2.imwrite(
-            os.path.join(MAIN.MEDIA_LOCATION, "thumbnails", thumbnail_file_name), frame
-        )
-        """
-
         # determine type/format
         estimated_format = filetype.guess(self.filename).extension
-        print(estimated_format)
         type = format = ""
         if estimated_format:
             for types in MAIN.format_options:
@@ -403,6 +371,9 @@ class AddNewFile(Screen):
 
         MAIN.edit_add_new_file = True
 
+    def cancel(self):
+        self.manager.current = "loadedMedia"
+
 
 class AlertPopup(Popup):
     pass
@@ -414,6 +385,10 @@ class WindowManager(ScreenManager):
 
 class KivyApp(MDApp):
     MEDIA_LOCATION = r"C:\pythonCode\rollerAds\media"
+    directories = {
+        "Windows": r"C:\pythonCode\rollerAds\static",
+        "Linux": r"/home/pi/pythonCode/rollerAds\static",
+    }
     selected_rows = [-1, -1]
     edit_add_new_file = False
     with open(
@@ -426,6 +401,7 @@ class KivyApp(MDApp):
         self.SCREEN = Builder.load_file("test.kv")
         self.loadedMediaScreenIds = self.SCREEN.get_screen("loadedMedia").ids
         self.editPropertiesScreenIds = self.SCREEN.get_screen("editProperties").ids
+        self.addNewFileScreenIds = self.SCREEN.get_screen("addNewFile").ids
         return self.SCREEN
 
 
@@ -447,7 +423,7 @@ def flatten_and_format(data, size):
 
 
 # Basic Kivy parameters
-Window.size = (1500, 900)
+Window.size = (1300, 700)
 Window.top, Window.left = 50, 50
 Window.clearcolor = (0.5, 0.3, 0.2, 1)
 MAIN = KivyApp()
